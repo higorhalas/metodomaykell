@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Esse leilão consta na lista?</title>
+<meta name="description" content="Cola o link do site de leilão e veja se ele consta na lista de leiloeiros que o Maykell usa, com a idade do domínio.">
+<meta property="og:title" content="Esse leilão consta na lista?">
+<meta property="og:description" content="Cola o link do site e confere antes de dar qualquer lance.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!--
+  ============================================================
+  O VERIFICADOR DE LEILOEIRO · v1 · 28/09/2026
+  Projeto leilao (Maykell Gomes). A isca das campanhas de 10/10.
+
+  O QUE ELA E: uma tela, um campo. O visitante cola o link do site de leilao
+  e recebe uma de cinco respostas, nenhuma delas um selo.
+
+  REGRA DE COPY QUE NAO SE NEGOCIA:
+  a ferramenta NUNCA escreve "seguro", "confiavel" nem "golpe" ao lado de um
+  dominio nomeado. Escreve "consta na lista conferida pelo Maykell em [data]"
+  ou "nao consta na nossa lista, confira nestas tres fontes".
+  Consta ou nao consta e fato verificavel. Seguro ou golpe e sentenca, e
+  sentenca sobre empresa nomeada e processo de um lado e falsa sensacao de
+  seguranca do outro.
+
+  FONTE DE DADOS (verificada no terminal em 28/09/2026):
+  · A lista dos 20 leiloeiros vem de leiloeiros.json e e INJETADA aqui dentro
+    pelo gerar_base.py. Nao editar a mao entre os marcadores BASE:INICIO/FIM.
+    Motivo de injetar em vez de fetch: a pagina abre de file://, funciona sem
+    internet e sobe em qualquer host estatico sem configuracao.
+  · A idade do dominio sai de RDAP, de graca, sem chave, com CORS liberado:
+      .br          -> rdap.registro.br            (autoritativo)
+      .com / .net  -> rdap.verisign.com            (autoritativo)
+      resto        -> rdap.org                     (redirecionador, 302 com CORS)
+    Correcao da spec: o ROADMAP dizia que exchange.superbid.net ficaria sem a
+    linha de idade porque nao e .br. Com a Verisign ele tem: 17/02/2000.
+
+  CONFIG PENDENTE DO HIGOR, no bloco CFG logo no inicio do script:
+  1. CAPTURA_ENDPOINT vazio -> o bloco de captura de lead NAO aparece.
+     A tela inteira funciona sem ele. Publicar o apps-script-verificador.gs
+     e colar a URL /exec ali liga a captura.
+  2. MOSTRAR_REGISTRANTE esta em false. Ver a nota no proprio CFG.
+
+  REGRAS: sem travessao, sem emoji, nunca afirmar a situacao do leitor,
+  nunca citar a empresa de rifas. O resultado aparece ANTES de pedir qualquer
+  dado: ferramenta antigolpe que pede seus dados antes de responder parece o
+  proprio golpe, e mata o compartilhamento, que e o que faz ela circular sozinha.
+  ============================================================
+-->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{
+  --bg:#0B0A07; --bg-2:#100E0A; --surface:#16130D; --surface-2:#1C1811;
+  --ink-1:#F8F6F0; --ink-2:#DFD9CB; --ink-3:#B4AE9E; --ink-4:#88826F; --ink-5:#5E594A;
+  --accent:#E8C86A; --accent-hi:#F4DA8E; --btn-text:#14100A;
+  --ok:#7FB069; --ok-hi:#A8D18E; --danger:#E0644A; --danger-hi:#F08E78;
+  --alerta:#D9913F; --alerta-hi:#EFB772;
+  --line:rgba(248,246,240,.07); --line-2:rgba(232,200,106,.13);
+  --font:'Sora',system-ui,-apple-system,sans-serif; --mono:'Courier Prime',monospace;
+  --t-micro:10px; --tr-micro:.13em;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--ink-3);
+  letter-spacing:-.015em;line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:70px}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+.micro{font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;font-weight:600}
+
+/* header */
+header{padding:48px 0 30px;text-align:center}
+header .selo{color:var(--accent);opacity:.8;margin-bottom:18px}
+header h1{font-size:clamp(28px,6.4vw,44px);font-weight:600;letter-spacing:-.055em;
+  line-height:1.06;color:var(--ink-1)}
+header h1 span{color:var(--accent)}
+header p{margin:14px auto 0;color:var(--ink-4);font-size:15.5px;max-width:44ch}
+.autor{margin-top:20px;color:var(--ink-5)}
+
+/* busca */
+.busca{margin-top:30px}
+.busca-cx{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{flex:1 1 260px;min-width:0;padding:17px 18px;border-radius:12px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-1);
+  font-family:var(--font);font-size:16px;letter-spacing:-.02em;transition:border-color .25s}
+input[type=text]:focus{outline:none;border-color:rgba(232,200,106,.45)}
+input::placeholder{color:var(--ink-5)}
+.btn{padding:17px 26px;border-radius:12px;border:0;cursor:pointer;font-family:var(--font);
+  font-size:15px;font-weight:700;letter-spacing:.01em;transition:transform .25s,background .25s}
+.btn-1{background:var(--accent);color:var(--btn-text);box-shadow:0 12px 28px rgba(232,200,106,.18)}
+.btn-1:hover{transform:translateY(-2px);background:var(--accent-hi)}
+.btn-2{background:transparent;border:1px solid var(--line-2);color:var(--ink-3);
+  padding:14px 22px;font-size:14px}
+.btn-2:hover{border-color:rgba(232,200,106,.4);color:var(--accent)}
+.busca .ajuda{color:var(--ink-5);font-size:12.5px;margin-top:11px;line-height:1.55}
+.erro{color:var(--danger);font-size:13.5px;margin-top:10px;display:none}
+.erro.on{display:block}
+
+/* resultado */
+.res{margin-top:28px;display:none}
+.res.on{display:block}
+.card{border-radius:20px;padding:28px 24px;border:1px solid var(--line);
+  background:var(--surface-2);box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.card.ok{border-color:rgba(127,176,105,.4);
+  background:linear-gradient(152deg,rgba(127,176,105,.09),rgba(127,176,105,.02) 64%),var(--surface-2)}
+.card.aviso{border-color:rgba(217,145,63,.45);
+  background:linear-gradient(152deg,rgba(217,145,63,.1),rgba(217,145,63,.02) 64%),var(--surface-2)}
+.card.neutro{border-color:var(--line-2);
+  background:linear-gradient(152deg,rgba(232,200,106,.06),transparent 64%),var(--surface-2)}
+.card .tag{display:inline-block;padding:6px 12px;border-radius:99px;margin-bottom:16px;
+  font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;font-weight:700}
+.card.ok .tag{background:rgba(127,176,105,.16);color:var(--ok-hi)}
+.card.aviso .tag{background:rgba(217,145,63,.16);color:var(--alerta-hi)}
+.card.neutro .tag{background:rgba(232,200,106,.12);color:var(--accent)}
+.card h2{color:var(--ink-1);font-size:clamp(20px,4.4vw,26px);font-weight:600;
+  letter-spacing:-.04em;line-height:1.22;margin-bottom:14px}
+.card>p{color:var(--ink-3);font-size:15px;margin-bottom:13px}
+.card>p:last-child{margin-bottom:0}
+.card b{color:var(--ink-1);font-weight:600}
+.dom{font-family:var(--mono);font-size:15px;color:var(--ink-1);word-break:break-all}
+
+/* ficha do leiloeiro */
+.ficha{margin:18px 0;padding:16px 18px;border-radius:13px;background:rgba(0,0,0,.26);
+  border:1px solid var(--line)}
+.ficha-l{display:flex;justify-content:space-between;gap:14px;padding:8px 0;
+  border-bottom:1px solid var(--line);font-size:14px;align-items:baseline}
+.ficha-l:last-child{border-bottom:0}
+.ficha-l span{color:var(--ink-4);flex:0 0 auto}
+.ficha-l b{color:var(--ink-2);font-weight:600;text-align:right;word-break:break-word}
+
+/* comparacao do clone */
+.comp{margin:18px 0;display:grid;gap:10px}
+.comp-l{padding:14px 16px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid var(--line)}
+.comp-l .rot{font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;
+  font-weight:700;margin-bottom:7px}
+.comp-l.seu .rot{color:var(--alerta-hi)}
+.comp-l.lista .rot{color:var(--ok-hi)}
+.comp-l .dom mark{background:rgba(224,100,74,.28);color:#FFD7CC;padding:1px 2px;border-radius:3px}
+.comp-l .idade{font-size:12.5px;color:var(--ink-5);margin-top:7px}
+.comp-l .idade b{color:var(--ink-2)}
+
+/* idade do dominio */
+.idade-cx{margin:18px 0;padding:18px;border-radius:13px;background:rgba(0,0,0,.26);
+  border:1px solid var(--line)}
+.idade-cx .rot{color:var(--ink-5);margin-bottom:9px}
+.idade-n{color:var(--ink-1);font-size:clamp(19px,4vw,24px);font-weight:600;letter-spacing:-.04em;
+  line-height:1.25}
+.idade-cx.novo{border-color:rgba(224,100,74,.38);background:rgba(224,100,74,.07)}
+.idade-cx.novo .idade-n{color:var(--danger-hi)}
+.idade-cx .obs{color:var(--ink-4);font-size:13.5px;margin-top:10px;line-height:1.6}
+.idade-cx .obs em{color:var(--ink-2);font-style:normal;font-weight:600}
+.carregando{color:var(--ink-5);font-size:13.5px}
+
+/* a linha fixa que fica na tela mesmo no caso positivo */
+.fixa{margin-top:18px;padding:16px 18px;border-radius:13px;
+  border:1px solid rgba(232,200,106,.22);background:rgba(232,200,106,.05)}
+.fixa p{color:var(--ink-2);font-size:14.5px;font-weight:600;letter-spacing:-.02em;line-height:1.55}
+
+/* as tres fontes */
+.fontes{margin-top:18px}
+.fontes>.rot{color:var(--ink-5);margin-bottom:11px}
+.fonte{display:block;padding:15px 17px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);text-decoration:none;margin-bottom:9px;transition:border-color .25s}
+.fonte:hover{border-color:rgba(232,200,106,.35)}
+.fonte b{display:block;color:var(--ink-1);font-size:14.5px;font-weight:600;letter-spacing:-.025em}
+.fonte span{display:block;color:var(--ink-5);font-size:12.5px;margin-top:3px;line-height:1.5}
+
+.acoes{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* captura, sempre DEPOIS do resultado */
+.captura{margin-top:16px;padding:26px 24px;border-radius:20px;display:none;
+  border:1px solid var(--line-2);background:linear-gradient(152deg,rgba(232,200,106,.07),transparent 70%),var(--surface)}
+.captura.on{display:block}
+.captura h3{color:var(--ink-1);font-size:19px;font-weight:600;letter-spacing:-.035em;margin-bottom:9px}
+.captura p{color:var(--ink-4);font-size:14px;margin-bottom:17px}
+.captura .campos{display:grid;gap:10px;margin-bottom:13px}
+.captura input{width:100%;padding:15px 16px;border-radius:11px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink-1);font-family:var(--font);font-size:16px}
+.captura input:focus{outline:none;border-color:rgba(232,200,106,.45)}
+.captura .lgpd{color:var(--ink-5);font-size:11.5px;margin:12px 0 0;line-height:1.55}
+.captura .obrigado{display:none;text-align:center;padding:10px 0}
+.captura.feito .campos,.captura.feito .btn,.captura.feito p,.captura.feito .lgpd{display:none}
+.captura.feito .obrigado{display:block}
+.captura .obrigado b{display:block;color:var(--ok-hi);font-size:17px;margin-bottom:7px}
+.captura .obrigado span{color:var(--ink-4);font-size:14px}
+
+/* rodape */
+footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);text-align:center}
+footer p{color:var(--ink-5);font-size:12px;line-height:1.75}
+footer b{color:var(--ink-4)}
+footer a{color:var(--ink-4)}
+
+/* exemplos pra experimentar */
+.exemplos{margin-top:22px;text-align:center}
+.exemplos .rot{color:var(--ink-5);margin-bottom:10px}
+.ex{display:inline-block;margin:0 5px 8px;padding:8px 13px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink-4);
+  font-family:var(--mono);font-size:12.5px;cursor:pointer;transition:border-color .25s,color .25s}
+.ex:hover{border-color:rgba(232,200,106,.35);color:var(--accent)}
+
+@media(max-width:520px){
+  header{padding:36px 0 24px}
+  .card{padding:24px 19px}
+  .btn-1{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="selo micro">Método do Maykell Gomes · 12 anos de leilão</div>
+    <h1>Esse leilão <span>consta na lista?</span></h1>
+    <p>Cola o endereço do site e eu te digo se ele está na lista de leiloeiros que eu uso, e há quanto tempo aquele domínio existe.</p>
+  </header>
+
+  <div class="busca">
+    <div class="busca-cx">
+      <input type="text" id="q" autocomplete="off" spellcheck="false"
+             placeholder="cola o link aqui, ex.: sodresantoro.com.br" aria-label="Endereço do site de leilão">
+      <button class="btn btn-1" id="conferir" type="button">Conferir</button>
+    </div>
+    <div class="ajuda">Serve o link inteiro, com https e tudo. Também serve só o nome do site.</div>
+    <div class="erro" id="erro"></div>
+  </div>
+
+  <div class="exemplos" id="exemplos">
+    <div class="rot micro">Pra experimentar</div>
+    <span class="ex" data-ex="sodresantoro.com.br">sodresantoro.com.br</span>
+    <span class="ex" data-ex="sodresantoro-leiloes.com">sodresantoro-leiloes.com</span>
+    <span class="ex" data-ex="senad.gov.br">senad.gov.br</span>
+  </div>
+
+  <div class="res" id="res" aria-live="polite"></div>
+
+  <div class="captura" id="captura">
+    <h3>Quer a lista inteira dos leilões que eu uso?</h3>
+    <p>São os <b id="capN">20</b> que eu abro quando vou comprar, com nome, cidade e endereço do site. Eu te mando no WhatsApp.</p>
+    <div class="campos">
+      <input type="text" id="cNome" placeholder="Seu nome" autocomplete="name">
+      <input type="text" id="cZap" placeholder="Seu WhatsApp com DDD" autocomplete="tel" inputmode="tel">
+    </div>
+    <button class="btn btn-1" id="cEnviar" type="button">Quero a lista</button>
+    <div class="erro" id="cErro"></div>
+    <p class="lgpd">Seus dados vão só pro Maykell, pra te mandar a lista e avisar de leilão. Dá pra sair quando quiser respondendo qualquer mensagem.</p>
+    <div class="obrigado">
+      <b>Pronto.</b>
+      <span>A lista chega no seu WhatsApp. Confere se o número está certo: <span id="cZapEco"></span></span>
+    </div>
+  </div>
+
+  <footer>
+    <p><b>O Verificador de Leiloeiro</b> · lista conferida pelo Maykell Gomes em <span id="dataLista">-</span></p>
+    <p>Consta ou não consta é o que essa tela responde. Ela não diz se um site é confiável, e não substitui ler o edital.</p>
+    <p>Idade do domínio consultada na hora em registro.br e nos registros oficiais de cada extensão.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   CFG · as duas decisoes que estao com o Higor
+   ============================================================ */
+var CFG = {
+
+  /* 1. CAPTURA DE LEAD.
+     Cole aqui a URL /exec do apps-script-verificador.gs depois de publicar.
+     VAZIO = o bloco de captura nao aparece na tela, e a ferramenta funciona
+     inteira sem ele. Nunca vai ao ar um formulario que engole lead em silencio. */
+  CAPTURA_ENDPOINT: '',
+
+  /* 2. MOSTRAR O REGISTRANTE DO DOMINIO (so funciona em .br).
+     O RDAP do registro.br devolve, de graca, o CNPJ e a razao social de quem
+     registrou o dominio. E o segundo sinal mais forte da ferramenta depois da
+     idade: em copart.com.br aparece COPART DO BRASIL ORGANIZACAO DE LEILOES
+     LTDA, e num clone costuma aparecer pessoa fisica ou nada.
+
+     Esta DESLIGADO por decisao pendente, nao por falta de codigo. O motivo:
+     a resposta do registro.br vem com um aviso de uso do Nic.br que proibe
+     "uso para publicidade ou fins similares", e essa ferramenta e isca de
+     campanha. A consulta parte do navegador do proprio visitante e nada e
+     gravado, o que e o mesmo que qualquer site de whois faz, mas a chamada
+     e do Higor. Trocar pra true liga. */
+  MOSTRAR_REGISTRANTE: false
+};
+
+/* ============================================================
+   BASE:INICIO
+   Gerado por gerar_base.py a partir de leiloeiros.json.
+   NAO EDITAR A MAO. Mexeu no json? roda: python3 gerar_base.py
+   ============================================================ */
+var BASE = {
+  "atualizado_em": "2026-09-28",
+  "leiloeiros": [
+    {"nome":"Copart Brasil","uf":"SP","cidade":"Osasco","dominio":"copart.com.br"},
+    {"nome":"Sodre Santoro","uf":"SP","cidade":null,"dominio":"sodresantoro.com.br"},
+    {"nome":"VIP Leiloes","uf":"MA","cidade":"Sao Luis","dominio":"vipleiloes.com.br"},
+    {"nome":"Freitas Leiloeiro","uf":"SP","cidade":"Sao Paulo","dominio":"freitasleiloeiro.com.br"},
+    {"nome":"Pestana Leiloes","uf":"RS","cidade":"Porto Alegre","dominio":"pestanaleiloes.com.br"},
+    {"nome":"Guariglia Leiloes","uf":"SP","cidade":"Cacapava","dominio":"guariglialeiloes.com.br"},
+    {"nome":"Superbid Exchange","uf":"SP","cidade":null,"dominio":"exchange.superbid.net"},
+    {"nome":"Palacio dos Leiloes","uf":"MG","cidade":null,"dominio":"palaciodosleiloes.com.br"},
+    {"nome":"Kronberg Leiloes","uf":"PR","cidade":"Curitiba","dominio":"kronbergleiloes.com.br"},
+    {"nome":"Joao Emilio Leiloeiro","uf":"RJ","cidade":"Rio de Janeiro","dominio":"joaoemilio.com.br"},
+    {"nome":"Daniel Garcia Leiloes","uf":"SC","cidade":"Criciuma","dominio":"danielgarcialeiloes.com.br"},
+    {"nome":"Sumare Leiloes","uf":"SP","cidade":"Sumare","dominio":"sumareleiloes.com.br"},
+    {"nome":"Rico Leiloes","uf":"SP","cidade":null,"dominio":"ricoleiloes.com.br"},
+    {"nome":"Marangoni Leiloes","uf":"PR","cidade":"Curitiba","dominio":"marangonileiloes.com.br"},
+    {"nome":"Pacto Leiloes","uf":"GO","cidade":"Goiania","dominio":"pactoleiloes.com.br"},
+    {"nome":"Mega Leiloes","uf":"SP","cidade":null,"dominio":"megaleiloes.com.br"},
+    {"nome":"Montenegro Leiloes","uf":"RS","cidade":null,"dominio":"montenegroleiloes.com.br"},
+    {"nome":"Lance Ja Leiloes","uf":"SP","cidade":"Santo Andre","dominio":"lanceja.com.br"},
+    {"nome":"Sato Leiloes","uf":"SP","cidade":"Sao Caetano do Sul","dominio":"satoleiloes.com.br"},
+    {"nome":"Lopes Leiloes","uf":"CE","cidade":"Fortaleza","dominio":"lopesleiloes.net.br"}
+  ]
+};
+/* ============================================================
+   BASE:FIM
+   ============================================================ */
+
+/* Sites de consulta, nao leiloeiro. Se alguem colar um desses, "nao consta"
+   seria uma resposta confusa: eles nao vendem lote nenhum. */
+var REFERENCIA = {
+  'leilaoseguro.org.br': { nome:'Leilão Seguro (ALEIBRAS)',
+    pra:'É o cadastro nacional de sites falsos de leilão. É pra onde eu te mando conferir um site que não está na minha lista.' },
+  'fenaju.org.br': { nome:'FENAJU',
+    pra:'É a federação das juntas comerciais. Tem o painel público dos leiloeiros oficiais matriculados, pra conferir se a pessoa existe.' }
+};
+
+/* Extensoes de governo. A lista e so de leiloeiro privado, entao responder
+   "nao consta" pra um site de tribunal seria o pior erro possivel aqui. */
+var GOV = ['.gov.br','.jus.br','.mp.br','.leg.br','.def.br','.jud.br','.tc.br'];
+
+/* Palavras genericas: sem tirar elas, "leiloes" casaria com metade da lista */
+var GENERICAS = ['leiloesonline','leiloeiros','leiloeiro','leiloeira','leiloes','leilao',
+                 'oficial','online','brasil','exchange','dos','das'];
+
+/* O que pode sobrar colado no nome de um oficial e ainda ser clone.
+   copartleiloes, copart-oficial, copartbrasil: o resto e generico.
+   freitasadvogados: o resto e uma palavra de outro ramo, entao NAO e clone.
+   Sem essa regra, todo escritorio Freitas do Brasil recebia alerta. */
+var RESTO_OK = ['leiloes','leilao','leiloeiro','leiloeiros','leiloesonline','online','oficial',
+                'official','brasil','lances','lance','leilos','bid','bids','auto','autos',
+                'veiculos','carros','veiculo','carro','site','oficialbrasil','grupo','loja',
+                'seguro','novo','real','digital','patio','arremate','arremates'];
+
+var SUFIXOS = ['.com.br','.net.br','.org.br','.ind.br','.adv.br','.eco.br','.art.br',
+               '.co.uk','.com','.net','.org','.info','.biz','.online','.site','.shop',
+               '.store','.xyz','.top','.vip','.live','.app','.br'];
+
+var $ = function(id){ return document.getElementById(id); };
+var HOJE = new Date();
+
+/* ---------- normalizacao do que o visitante colou ---------- */
+function normaliza(bruto){
+  var s = String(bruto || '').trim().toLowerCase();
+  if (!s) return '';
+  s = s.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');   /* tira https:// e afins */
+  s = s.replace(/^[^@\/]*@/, '');                  /* tira usuario@ */
+  s = s.split(/[\/?#]/)[0];                        /* tira caminho, query, hash */
+  s = s.split(':')[0];                             /* tira :porta */
+  s = s.replace(/\.+$/, '');                       /* tira ponto final */
+  s = s.replace(/^www\./, '');
+  return s;
+}
+
+function valido(h){
+  /* o ultimo pedaco tem que ser uma extensao de verdade, com 2 letras ou mais.
+     Sem isso "a.b" passava como endereco e a ferramenta respondia a serio. */
+  return /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/.test(h);
+}
+
+/* tudo em letra e numero, o host inteiro. e nisso que a deteccao de clone
+   procura, porque golpe do tipo copart.com.br.leiloes-online.com existe */
+function achata(h){ return h.replace(/[^a-z0-9]/g, ''); }
+
+/* o nucleo: o rotulo que carrega o nome, sem a extensao */
+function nucleo(h){
+  var s = h;
+  for (var i=0;i<SUFIXOS.length;i++){
+    if (s.length > SUFIXOS[i].length && s.slice(-SUFIXOS[i].length) === SUFIXOS[i]){
+      s = s.slice(0, -SUFIXOS[i].length); break;
+    }
+  }
+  var p = s.split('.');
+  return achata(p[p.length-1]);
+}
+
+/* a marca: o nucleo sem as palavras genericas. se sobrar coisa curta demais,
+   volta pro nucleo inteiro, senao "rico" casaria com qualquer coisa */
+function marca(n){
+  var m = n;
+  for (var i=0;i<GENERICAS.length;i++){ m = m.split(GENERICAS[i]).join(''); }
+  return m.length >= 6 ? m : n;
+}
+
+function levenshtein(a,b){
+  if (a === b) return 0;
+  var m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  if (Math.abs(m-n) > 3) return 99;
+  var prev = [], cur = [], i, j;
+  for (j=0;j<=n;j++) prev[j] = j;
+  for (i=1;i<=m;i++){
+    cur[0] = i;
+    for (j=1;j<=n;j++){
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a.charAt(i-1)===b.charAt(j-1)?0:1));
+    }
+    for (j=0;j<=n;j++) prev[j] = cur[j];
+  }
+  return prev[n];
+}
+
+/* ---------- a base preparada uma vez ---------- */
+var LISTA = BASE.leiloeiros.map(function(l){
+  var n = nucleo(l.dominio);
+  return { nome:l.nome, uf:l.uf, cidade:l.cidade, dominio:l.dominio, nucleo:n, marca:marca(n) };
+});
+
+/* ---------- a classificacao ---------- */
+function classifica(h){
+  var i, l;
+
+  for (i=0;i<GOV.length;i++){
+    /* o proprio gov.br e o portal federal, e e ali que fica o leilao da Receita.
+       So casar por ".gov.br" deixava ele de fora e ele caia em "nao consta",
+       que e o pior erro possivel numa ferramenta antigolpe. */
+    if (h === GOV[i].slice(1) || h.slice(-GOV[i].length) === GOV[i]){
+      return { tipo:'governo', sufixo:GOV[i] };
+    }
+  }
+  if (REFERENCIA[h]) return { tipo:'referencia', ref:REFERENCIA[h] };
+
+  for (i=0;i<LISTA.length;i++){
+    l = LISTA[i];
+    if (h === l.dominio) return { tipo:'consta', l:l, onde:'igual' };
+    /* pagina dentro do site da lista: leiloes.copart.com.br */
+    if (h.slice(-(l.dominio.length+1)) === '.' + l.dominio) return { tipo:'consta', l:l, onde:'filho' };
+    /* o dominio raiz de um que esta na lista como subdominio:
+       superbid.net e o site da Superbid, e a lista tem exchange.superbid.net.
+       Sem essa regra o site verdadeiro da Superbid virava "parecido", que e o
+       erro exatamente ao contrario do que a ferramenta existe pra evitar. */
+    if (h.indexOf('.') > 0 && l.dominio.slice(-(h.length+1)) === '.' + h){
+      return { tipo:'consta', l:l, onde:'pai' };
+    }
+  }
+
+  var nuc = nucleo(h), melhor = null;
+  /* os rotulos a esquerda do nucleo. e neles que mora o golpe do tipo
+     copart.com.br.leiloes-online.com, em que o nome do oficial e usado como
+     subdominio de outro dono. */
+  var outros = h.split('.').map(achata);
+  var iNuc = outros.lastIndexOf(nuc);
+  if (iNuc !== -1) outros.splice(iNuc, 1);
+
+  for (i=0;i<LISTA.length;i++){
+    l = LISTA[i];
+    var cand = null, k;
+
+    if (nuc === l.nucleo){
+      cand = { l:l, forca:4, motivo:'mesmo-nome' };
+    }
+    if (!cand){
+      for (k=0;k<outros.length;k++){
+        if (outros[k].length >= 4 && outros[k].indexOf(l.marca) !== -1){
+          cand = { l:l, forca:3, motivo:'nome-no-subdominio' }; break;
+        }
+      }
+    }
+    if (!cand && nuc.indexOf(l.marca) !== -1){
+      var resto = nuc.split(l.marca).join('');
+      if (resto.length <= 4 || RESTO_OK.indexOf(resto) !== -1){
+        cand = { l:l, forca:2, motivo:'nome-dentro', resto:resto };
+      }
+    }
+    if (!cand){
+      var d = levenshtein(nuc, l.nucleo);
+      if (d >= 1 && d <= 2 && nuc.length >= 5) cand = { l:l, forca:1, motivo:'letras', dist:d };
+    }
+
+    if (cand && (!melhor || cand.forca > melhor.forca ||
+        (cand.forca === melhor.forca && cand.l.marca.length > melhor.l.marca.length))) melhor = cand;
+  }
+  if (melhor) return { tipo:'parecido', m:melhor };
+  return { tipo:'naoconsta' };
+}
+
+/* ---------- idade do dominio, por RDAP ---------- */
+
+/* Extensoes de dois niveis. Sem elas, o registravel de copart.com.br daria
+   "com.br". A lista cobre o que aparece em site de leilao brasileiro. */
+var ETLD2 = ['com.br','net.br','org.br','ind.br','adv.br','eco.br','art.br','esp.br','tur.br',
+             'gov.br','jus.br','mp.br','leg.br','def.br','jud.br','tc.br','edu.br','org.uk','co.uk'];
+
+/* O RDAP NAO tem registro de subdominio: exchange.superbid.net nao existe la,
+   quem existe e superbid.net. Sem essa funcao, todo endereco com subdominio
+   voltava "nao aparece registrado", que e uma acusacao falsa. */
+function registravel(h){
+  var pp = h.split('.');
+  if (pp.length <= 2) return h;
+  var duas = pp.slice(-2).join('.');
+  return ETLD2.indexOf(duas) !== -1 ? pp.slice(-3).join('.') : duas;
+}
+
+/* gov.br, com.br e jus.br sozinhos sao a propria extensao, nao um dominio.
+   Perguntar a idade deles nao faz sentido e a resposta confundiria. */
+function ehExtensaoPura(h){ return ETLD2.indexOf(h) !== -1; }
+
+function rdapUrl(h, tentativa){
+  var ehBr = h.slice(-3) === '.br';
+  var tld  = h.split('.').pop();
+  if (tentativa === 0){
+    if (ehBr) return 'https://rdap.registro.br/domain/' + h;
+    if (tld === 'com' || tld === 'net') return 'https://rdap.verisign.com/' + tld + '/v1/domain/' + h;
+    return 'https://rdap.org/domain/' + h;
+  }
+  /* segunda tentativa: o redirecionador cobre o que a autoritativa nao cobriu */
+  if (!ehBr && tld !== 'com' && tld !== 'net') return null;
+  return 'https://rdap.org/domain/' + h;
+}
+
+function idade(hBruto){
+  var h = registravel(hBruto);
+  var proprio = (h === hBruto);
+  return new Promise(function(resolve){
+    if (ehExtensaoPura(hBruto)) return resolve({ estado:'naoseaplica' });
+    var t = 0;
+    var envelopa = function(o){ o.dominio = h; o.proprio = proprio; return o; };
+    function tenta(){
+      var url = rdapUrl(h, t);
+      if (!url) return resolve(envelopa({ estado:'semdado' }));
+      var to = setTimeout(function(){ resolve(envelopa({ estado:'semdado' })); }, 9000);
+      fetch(url, { headers:{ 'Accept':'application/rdap+json' } })
+        .then(function(r){
+          if (r.status === 404){
+            clearTimeout(to);
+            if (t === 0 && rdapUrl(h,1)){ t = 1; return tenta(); }
+            return resolve(envelopa({ estado:'naoregistrado', autoritativo: h.slice(-3)==='.br' || ['com','net'].indexOf(h.split('.').pop())!==-1 }));
+          }
+          if (!r.ok) throw new Error(r.status);
+          return r.json().then(function(d){
+            clearTimeout(to);
+            var ev = (d.events || []).filter(function(e){ return e.eventAction === 'registration'; });
+            if (!ev.length) return resolve(envelopa({ estado:'semdado' }));
+            var dt = new Date(ev[0].eventDate);
+            if (isNaN(dt.getTime())) return resolve(envelopa({ estado:'semdado' }));
+            resolve(envelopa({ estado:'ok', data:dt, dias:Math.floor((HOJE - dt)/86400000), reg:registrante(d) }));
+          });
+        })
+        .catch(function(){
+          clearTimeout(to);
+          if (t === 0 && rdapUrl(h,1)){ t = 1; return tenta(); }
+          resolve(envelopa({ estado:'semdado' }));
+        });
+    }
+    tenta();
+  });
+}
+
+/* CNPJ e razao social de quem registrou. So .br devolve isso. Ver CFG. */
+function registrante(d){
+  if (!CFG.MOSTRAR_REGISTRANTE) return null;
+  var ents = d.entities || [];
+  for (var i=0;i<ents.length;i++){
+    var e = ents[i];
+    if ((e.roles || []).indexOf('registrant') === -1) continue;
+    var nome = null, doc = null, va = (e.vcardArray || [])[1] || [];
+    for (var j=0;j<va.length;j++){ if (va[j][0] === 'fn') nome = va[j][3]; }
+    var ids = e.publicIds || [];
+    for (var k=0;k<ids.length;k++){ if (ids[k].identifier) doc = ids[k].identifier; }
+    if (nome || doc) return { nome:nome, doc:doc };
+  }
+  return null;
+}
+
+function porExtenso(dias){
+  if (dias < 60) return dias + (dias === 1 ? ' dia' : ' dias');
+  var a = Math.floor(dias/365.25), m = Math.floor((dias - a*365.25)/30.44);
+  if (a < 1) return m + (m === 1 ? ' mês' : ' meses');
+  var s = a + (a === 1 ? ' ano' : ' anos');
+  if (m > 0) s += ' e ' + m + (m === 1 ? ' mês' : ' meses');
+  return s;
+}
+function dataBr(d){
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------- a caixa da idade ---------- */
+function caixaIdade(r, h){
+  if (r.estado === 'naoseaplica'){
+    return '<div class="idade-cx">' +
+      '<div class="rot micro">Idade do domínio</div>' +
+      '<div class="idade-n">Isso não é um domínio, é a extensão</div>' +
+      '<div class="obs">' + esc(h) + ' é o final que os endereços de governo usam, e não um site em si. Quem tem idade é o endereço completo, do tipo senad.gov.br.</div>' +
+      '</div>';
+  }
+  if (r.estado === 'ok'){
+    var novo = r.dias < 365;
+    var reg = '';
+    if (r.reg && (r.reg.nome || r.reg.doc)){
+      reg = '<div class="obs">Registrado por <em>' + esc(r.reg.nome || 'registrante não identificado') +
+            (r.reg.doc ? ', ' + esc(r.reg.doc) : '') + '</em>.</div>';
+    }
+    return '<div class="idade-cx' + (novo ? ' novo' : '') + '">' +
+      '<div class="rot micro">Idade do domínio</div>' +
+      '<div class="idade-n">' + porExtenso(r.dias) + ' de existência</div>' +
+      '<div class="obs">' + (r.proprio
+        ? 'Esse endereço foi registrado em <em>' + dataBr(r.data) + '</em>.'
+        : 'Quem responde por esse endereço é o domínio <em>' + esc(r.dominio) + '</em>, registrado em <em>' + dataBr(r.data) + '</em>. Tudo o que vem antes do ponto é escolhido por quem já é dono dele.')
+      + '</div>' + reg +
+      (novo ? '<div class="obs">Domínio novo é a primeira coisa que eu olho. Leiloeiro com pátio, edital e telefone que atende costuma ter endereço antigo. <em>Se esse número te surpreendeu, confere nas fontes abaixo antes de pagar qualquer coisa.</em></div>' : '') +
+      '</div>';
+  }
+  if (r.estado === 'naoregistrado'){
+    return '<div class="idade-cx novo">' +
+      '<div class="rot micro">Idade do domínio</div>' +
+      '<div class="idade-n">Esse domínio não aparece registrado</div>' +
+      '<div class="obs">' + (r.autoritativo
+        ? 'Consultei o registro oficial da extensão e não achei <em>' + esc(r.dominio) + '</em> lá. Ou o endereço está escrito errado, ou esse site não existe mais.'
+        : 'Não achei registro de <em>' + esc(r.dominio) + '</em>. Confere se você copiou o link inteiro e certo.') + '</div>' +
+      '</div>';
+  }
+  return '<div class="idade-cx">' +
+    '<div class="rot micro">Idade do domínio</div>' +
+    '<div class="idade-n">Não deu pra conferir agora</div>' +
+    '<div class="obs">A consulta de idade não respondeu. Isso não diz nada sobre o site, só que o registro não respondeu. Dá pra tentar de novo em um minuto.</div>' +
+    '</div>';
+}
+
+/* ---------- destaque letra por letra ---------- */
+function destaca(seu, oficial){
+  var i = 0, n = Math.min(seu.length, oficial.length);
+  while (i < n && seu.charAt(i) === oficial.charAt(i)) i++;
+  var j = 0;
+  while (j < n - i && seu.charAt(seu.length-1-j) === oficial.charAt(oficial.length-1-j)) j++;
+  var meio = seu.slice(i, seu.length - j);
+  if (!meio) return esc(seu);
+  return esc(seu.slice(0,i)) + '<mark>' + esc(meio) + '</mark>' + esc(seu.slice(seu.length-j));
+}
+
+/* ---------- as tres fontes ---------- */
+function blocoFontes(){
+  return '<div class="fontes">' +
+    '<div class="rot micro">Onde eu confiro o que não está na minha lista</div>' +
+    '<a class="fonte" href="https://leilaoseguro.org.br" target="_blank" rel="noopener">' +
+      '<b>Leilão Seguro, da ALEIBRAS</b>' +
+      '<span>O cadastro nacional de sites falsos de leilão. Procura o endereço lá.</span></a>' +
+    '<a class="fonte" href="https://www.fenaju.org.br" target="_blank" rel="noopener">' +
+      '<b>Painel da FENAJU</b>' +
+      '<span>Os leiloeiros oficiais matriculados. Serve pra conferir se a pessoa que assina o leilão existe.</span></a>' +
+    '<a class="fonte" href="https://www.gov.br/empresas-e-negocios/pt-br/juntas-comerciais" target="_blank" rel="noopener">' +
+      '<b>Junta Comercial do estado</b>' +
+      '<span>Leiloeiro oficial é matriculado na Junta do estado onde ele atua. É lá que se confirma a matrícula.</span></a>' +
+    '</div>';
+}
+
+var LINHA_FIXA = '<div class="fixa"><p>Confirme o pagamento pelo telefone que está no site oficial, ' +
+  'nunca por link, boleto ou Pix recebido no WhatsApp.</p></div>';
+
+function blocoAcoes(h){
+  var txt = 'Confere esse site de leilão antes de dar lance: ' + h + '\n\n' +
+            'Eu conferi aqui: ' + location.href.split('?')[0];
+  return '<div class="acoes">' +
+    '<button class="btn btn-2" data-share="' + esc(txt) + '" type="button">Mandar pra alguém no WhatsApp</button>' +
+    '<button class="btn btn-2" id="outro" type="button">Conferir outro site</button>' +
+    '</div>';
+}
+
+/* ---------- montagem da resposta ---------- */
+var ultimoHost = '', ultimoVeredito = '';
+
+function responde(h){
+  var c = classifica(h), html = '';
+  ultimoHost = h;
+  ultimoVeredito = c.tipo;
+
+  if (c.tipo === 'consta'){
+    var l = c.l, onde = l.cidade ? l.cidade + ', ' + l.uf : l.uf;
+    var nota = '';
+    if (c.onde === 'filho'){
+      nota = '<p>Você colou <b class="dom">' + esc(h) + '</b>, que é uma página dentro de <b class="dom">' + esc(l.dominio) + '</b>.</p>';
+    } else if (c.onde === 'pai'){
+      nota = '<p>Você colou <b class="dom">' + esc(h) + '</b>. O endereço que eu tenho anotado é o da área de lotes, <b class="dom">' + esc(l.dominio) + '</b>, que fica dentro desse mesmo site.</p>';
+    }
+    html = '<div class="card ok">' +
+      '<div class="tag">Consta na lista</div>' +
+      '<h2>' + esc(l.nome) + ' está na lista que eu uso.</h2>' +
+      nota +
+      '<div class="ficha">' +
+        '<div class="ficha-l"><span>Leiloeiro</span><b>' + esc(l.nome) + '</b></div>' +
+        '<div class="ficha-l"><span>Onde fica</span><b>' + esc(onde) + '</b></div>' +
+        '<div class="ficha-l"><span>Endereço na lista</span><b class="dom">' + esc(l.dominio) + '</b></div>' +
+        '<div class="ficha-l"><span>Lista conferida em</span><b>' + esc(dataLista()) + '</b></div>' +
+      '</div>' +
+      '<div id="slotIdade"><div class="carregando">Consultando a idade do domínio...</div></div>' +
+      LINHA_FIXA +
+      '<p>Constar aqui quer dizer que esse é um dos leiloeiros que eu abro. Não é um selo, e não me faz responsável pelo lote: <b>o edital é que diz o que você está comprando.</b></p>' +
+      blocoAcoes(h) +
+      '</div>';
+  }
+
+  else if (c.tipo === 'parecido'){
+    var m = c.m, of = m.l;
+    var frase = {
+      'mesmo-nome': 'É o mesmo nome, em um endereço diferente do que está na minha lista.',
+      'nome-no-subdominio': 'O nome dele está no meio do endereço, mas quem manda num endereço é a parte final, e a parte final aqui é outra. Esse é o truque mais usado.',
+      'nome-dentro': 'O nome dele aparece dentro do endereço que você colou, com um pedaço a mais, e o endereço não é o dele.',
+      'letras': 'Muda ' + m.dist + (m.dist === 1 ? ' letra' : ' letras') + ' do endereço que está na minha lista.'
+    }[m.motivo];
+    html = '<div class="card aviso">' +
+      '<div class="tag">Parecido com um da lista</div>' +
+      '<h2>Esse endereço é parecido com o de ' + esc(of.nome) + ', e não é o mesmo.</h2>' +
+      '<p>' + frase + ' <b>Esse é o caso em que eu paro e confiro letra por letra</b>, porque é assim que o site clonado se parece com o original.</p>' +
+      '<div class="comp">' +
+        '<div class="comp-l seu"><div class="rot">O que você colou</div>' +
+          '<div class="dom">' + destaca(h, of.dominio) + '</div>' +
+          '<div class="idade" id="idadeSeu">conferindo a idade...</div></div>' +
+        '<div class="comp-l lista"><div class="rot">O que está na minha lista</div>' +
+          '<div class="dom">' + esc(of.dominio) + '</div>' +
+          '<div class="idade" id="idadeOf">conferindo a idade...</div></div>' +
+      '</div>' +
+      '<p>Não estou dizendo que o endereço que você colou é falso. Estou dizendo que <b>ele não é o que está na minha lista</b>, e que parecido o suficiente pra confundir é motivo pra conferir nas três fontes abaixo antes de qualquer coisa.</p>' +
+      LINHA_FIXA +
+      blocoFontes() +
+      blocoAcoes(h) +
+      '</div>';
+  }
+
+  else if (c.tipo === 'governo'){
+    html = '<div class="card neutro">' +
+      '<div class="tag">Site oficial de governo</div>' +
+      '<h2>Esse é um endereço de governo, não de leiloeiro privado.</h2>' +
+      '<p><b class="dom">' + esc(h) + '</b> termina em <b>' + esc(c.sufixo) + '</b>, que é extensão reservada. Minha lista é só de leiloeiro privado, então procurar ele aqui não diz nada.</p>' +
+      '<div id="slotIdade"><div class="carregando">Consultando a idade do domínio...</div></div>' +
+      '<p><b>O cuidado aqui é outro.</b> No leilão de governo o que vale é o edital: é ele que nomeia o leiloeiro responsável, diz onde se paga e qual a conta. Abre o edital do lote e confere o nome do leiloeiro que está lá dentro, porque é com ele que você vai tratar.</p>' +
+      LINHA_FIXA +
+      blocoAcoes(h) +
+      '</div>';
+  }
+
+  else if (c.tipo === 'referencia'){
+    html = '<div class="card neutro">' +
+      '<div class="tag">Site de consulta</div>' +
+      '<h2>' + esc(c.ref.nome) + ' não é um leiloeiro.</h2>' +
+      '<p>' + esc(c.ref.pra) + '</p>' +
+      '<p>Por isso ele não aparece na minha lista: ali não se compra lote nenhum. <b>É ferramenta de conferência, e das boas.</b></p>' +
+      blocoAcoes(h) +
+      '</div>';
+  }
+
+  else {
+    html = '<div class="card neutro">' +
+      '<div class="tag">Não consta na lista</div>' +
+      '<h2>Esse endereço não está na minha lista, e isso não quer dizer que seja falso.</h2>' +
+      '<p>Você colou <b class="dom">' + esc(h) + '</b>. Minha lista tem ' + LISTA.length +
+        ' leiloeiros, que são os que eu uso. Existe leiloeiro sério de sobra fora dela.</p>' +
+      '<div id="slotIdade"><div class="carregando">Consultando a idade do domínio...</div></div>' +
+      '<p>Então em vez de eu dar um veredito sobre um site que eu não conheço, <b>vou te mandar onde eu mesmo conferiria:</b></p>' +
+      blocoFontes() +
+      LINHA_FIXA +
+      blocoAcoes(h) +
+      '</div>';
+  }
+
+  $('res').innerHTML = html;
+  $('res').classList.add('on');
+  $('exemplos').style.display = 'none';
+
+  /* a idade chega depois, sem travar a resposta */
+  if (c.tipo === 'parecido'){
+    idade(h).then(function(r){ linhaCurta('idadeSeu', r); });
+    idade(c.m.l.dominio).then(function(r){ linhaCurta('idadeOf', r); });
+  } else if (c.tipo !== 'referencia'){
+    idade(h).then(function(r){
+      var slot = $('slotIdade');
+      if (slot) slot.innerHTML = caixaIdade(r, h);
+    });
+  }
+
+  if (CFG.CAPTURA_ENDPOINT) $('captura').classList.add('on');
+
+  var alvo = $('res').getBoundingClientRect().top + window.pageYOffset - 16;
+  window.scrollTo({ top:alvo, behavior:'smooth' });
+}
+
+function linhaCurta(id, r){
+  var el = $(id); if (!el) return;
+  if (r.estado === 'ok'){
+    el.innerHTML = (r.proprio ? '' : 'quem manda aqui é <b>' + esc(r.dominio) + '</b>, ') +
+      'no ar há <b>' + porExtenso(r.dias) + '</b>, desde ' + dataBr(r.data);
+  }
+  else if (r.estado === 'naoregistrado') el.innerHTML = '<b>' + esc(r.dominio) + ' não aparece registrado</b>';
+  else if (r.estado === 'naoseaplica') el.textContent = 'é extensão, não domínio';
+  else el.textContent = 'idade não conferida';
+}
+
+function dataLista(){
+  var p = String(BASE.atualizado_em).split('-');
+  return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : BASE.atualizado_em;
+}
+
+/* ---------- eventos ---------- */
+function conferir(){
+  var h = normaliza($('q').value);
+  var e = $('erro');
+  if (!h){ e.textContent = 'Cola o endereço do site que você quer conferir.'; e.classList.add('on'); return; }
+  if (!valido(h)){
+    e.textContent = 'Não entendi esse endereço. Ele tem que ter um ponto, como sodresantoro.com.br.';
+    e.classList.add('on'); return;
+  }
+  e.classList.remove('on');
+  responde(h);
+}
+
+$('conferir').addEventListener('click', conferir);
+$('q').addEventListener('keydown', function(ev){ if (ev.key === 'Enter'){ ev.preventDefault(); conferir(); } });
+$('exemplos').addEventListener('click', function(ev){
+  var b = ev.target.closest('.ex'); if (!b) return;
+  $('q').value = b.dataset.ex; conferir();
+});
+
+document.addEventListener('click', function(ev){
+  var b = ev.target.closest('[data-share]');
+  if (b){
+    window.open('https://wa.me/?text=' + encodeURIComponent(b.dataset.share), '_blank', 'noopener');
+    return;
+  }
+  if (ev.target.id === 'outro'){
+    $('res').classList.remove('on'); $('res').innerHTML = '';
+    $('exemplos').style.display = '';
+    $('q').value = ''; $('q').focus();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+});
+
+/* ---------- captura, so existe se tiver endpoint ---------- */
+function utm(k){
+  var m = new RegExp('[?&]'+k+'=([^&]*)').exec(location.search);
+  return m ? decodeURIComponent(m[1].replace(/\+/g,' ')) : '';
+}
+
+$('cEnviar').addEventListener('click', function(){
+  var nome = $('cNome').value.trim();
+  var zap  = $('cZap').value.replace(/\D/g,'');
+  var e = $('cErro');
+  if (nome.length < 2){ e.textContent = 'Escreve seu nome.'; e.classList.add('on'); return; }
+  if (zap.length < 10){ e.textContent = 'O WhatsApp precisa do DDD, com 10 ou 11 números.'; e.classList.add('on'); return; }
+  e.classList.remove('on');
+  var b = this; b.disabled = true; b.textContent = 'Enviando...';
+
+  /* mesmo encanamento da landing do aulao: sendBeacon primeiro, porque
+     sobrevive a navegacao, e fetch no-cors como reserva. O Apps Script nao
+     devolve cabecalho de CORS, entao nao da pra ler a resposta: o certo e
+     nao prometer sucesso que nao se pode confirmar, e por isso a tela diz
+     "confere se o numero esta certo" em vez de "recebido". */
+  var body = JSON.stringify({
+    nome:nome, whatsapp:zap,
+    dominio_consultado:ultimoHost, veredito:ultimoVeredito,
+    campanha:utm('utm_campaign'), conjunto:utm('utm_content'),
+    anuncio:utm('utm_term'), origem_trafego:utm('utm_source'),
+    origem:'verificador'
+  });
+  var enviado = false;
+  try {
+    if (navigator.sendBeacon){
+      enviado = navigator.sendBeacon(CFG.CAPTURA_ENDPOINT,
+        new Blob([body], { type:'text/plain;charset=utf-8' }));
+    }
+  } catch(_){}
+  if (!enviado){
+    try {
+      fetch(CFG.CAPTURA_ENDPOINT, { method:'POST', mode:'no-cors', keepalive:true,
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body:body }).catch(function(){});
+    } catch(_){}
+  }
+  $('cZapEco').textContent = zap;
+  $('captura').classList.add('feito');
+});
+
+/* ---------- arranque ---------- */
+$('dataLista').textContent = dataLista();
+$('capN').textContent = LISTA.length;
+if (!CFG.CAPTURA_ENDPOINT){
+  console.warn('[verificador] CFG.CAPTURA_ENDPOINT vazio: o bloco de captura de lead nao vai aparecer. Publique o apps-script-verificador.gs e cole a URL /exec.');
+}
+var pre = utm('site') || utm('d');
+if (pre){ $('q').value = pre; conferir(); }
+})();
+</script>
+</body>
+</html>
