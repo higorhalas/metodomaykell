@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Peças de picape, já garimpadas</title>
+<meta name="description" content="Escolha a picape e as peças do lote. Cada peça abre a busca certa no Mercado Livre, e as que o Maykell já garimpou vêm com o anúncio que ele indica.">
+<meta property="og:title" content="Peças de picape, já garimpadas">
+<meta property="og:description" content="Escolha a picape e as peças do lote. Cada peça abre a busca certa no Mercado Livre.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!--
+  ============================================================
+  BUSCADOR DE PECAS PUBLICO - metodomaykell.com.br/picape/ - 12/10/2026
+  Projeto leilao (Maykell Gomes). Pagina PUBLICA, fora do login.
+
+  O QUE ELA E: o aluno escolhe a picape (marca > modelo > ano, por lista,
+  nunca digitando) e ve, por regiao do carro, as pecas com 1 a 3 anuncios
+  garimpados. Cada botao Comprar leva o link de afiliado REAL, gerado no
+  painel do Higor (conta henriquehigor20220711224140, matt_tool=97312549)
+  e colado SEM NENHUMA alteracao. Link montado por formula nao paga e
+  arrisca a conta: por isso o gerar_base.py confere cada link byte a byte
+  contra a colagem crua do painel (links_painel.txt).
+
+  AS REGRAS DO PROGRAMA QUE ESTA PAGINA OBEDECE (auditoria de 11-12/10):
+  . aviso de publicidade ANTES de qualquer produto, em tamanho de leitura
+  . link SO de pagina de produto; nunca busca, categoria, carrinho, vendedor
+  . zero redirecionamento automatico, zero abertura de janela por script,
+    zero moldura embutida, zero pre-carregamento dos links: o unico
+    caminho e o <a> clicado
+  . sem logo nem cores do Mercado Livre; a mencao textual fica no aviso
+    e no botao, e acabou
+  . nenhum rotulo comparativo de preco entre anuncios: a ordem e a do catalogo
+  . so peca NOVA; peca de seguranca (airbag, modulo, cinto) nao tem link:
+    e orcamento de oficina
+  . o dominio esta declarado como midia na conta do afiliado (12/10/2026)
+  . ninguem do projeto clica nos proprios links, nem da rede do escritorio
+
+  O PRECO (flag MOSTRAR_PRECO, nasce DESLIGADA):
+  . desligada: a coluna de valor diz "preco no Mercado Livre" e o total
+    nao existe no DOM. O Comprar funciona igual. E a versao publicavel HOJE.
+  . ligada (SO depois da autorizacao por escrito do ML, dev 5.1, e do robo
+    de preco no ar): a pagina le precos.json (gerado pelo GitHub Action a
+    cada 6h via API oficial, item por ID), mostra "atualizado em dd/mm hh:mm"
+    e soma o total das pecas marcadas pela PRIMEIRA opcao de cada peca.
+    Preco com mais de VALIDADE_MS some sozinho, e o total junto. Item fora
+    do ar ou usado some. fetch falhou (file://, robo parado): some tudo,
+    sem quebrar nada.
+
+  O CATALOGO e injetado entre os marcadores CATALOGO:INICIO/FIM pelo
+  gerar_base.py a partir do pecas.json. NAO editar a mao entre eles.
+
+  REGRAS DE COPY: sem travessao, sem emoji no que o visitante le, nunca
+  a expressao proibida de parcelamento, nunca afirmar a situacao do
+  leitor, nunca prometer lucro,
+  nunca citar a empresa de rifas. Isencao em primeira pessoa do Maykell.
+  ============================================================
+-->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{
+  --bg:#0B0A07; --bg-2:#100E0A; --surface:#16130D; --surface-2:#1C1811;
+  --ink-1:#F8F6F0; --ink-2:#DFD9CB; --ink-3:#B4AE9E; --ink-4:#88826F; --ink-5:#5E594A;
+  --accent:#E8C86A; --accent-hi:#F4DA8E; --btn-text:#14100A;
+  --ok:#7FB069; --ok-hi:#A8D18E; --danger:#E0644A; --danger-hi:#F08E78;
+  --alerta:#D9913F; --alerta-hi:#EFB772;
+  --line:rgba(248,246,240,.07); --line-2:rgba(232,200,106,.13);
+  --font:'Sora',system-ui,-apple-system,sans-serif; --mono:'Courier Prime',monospace;
+  --t-micro:10px; --tr-micro:.13em;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--ink-3);
+  letter-spacing:-.015em;line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:70px}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.micro{font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;font-weight:600}
+
+/* header */
+header{padding:48px 0 26px;text-align:center}
+header .selo{color:var(--accent);opacity:.8;margin-bottom:18px}
+header h1{font-size:clamp(28px,6.4vw,44px);font-weight:600;letter-spacing:-.055em;
+  line-height:1.06;color:var(--ink-1)}
+header h1 span{color:var(--accent)}
+header p{margin:14px auto 0;color:var(--ink-4);font-size:15.5px;max-width:46ch}
+
+/* botoes */
+.btn{padding:13px 18px;border-radius:12px;border:0;cursor:pointer;font-family:var(--font);
+  font-size:14px;font-weight:700;letter-spacing:.01em;transition:transform .25s,background .25s;
+  text-decoration:none;display:inline-block;text-align:center}
+.btn-1{background:var(--accent);color:var(--btn-text);box-shadow:0 10px 24px rgba(232,200,106,.16)}
+.btn-1:hover{transform:translateY(-2px);background:var(--accent-hi)}
+.btn-2{background:transparent;border:1px solid var(--line-2);color:var(--ink-3)}
+.btn-2:hover{border-color:rgba(232,200,106,.4);color:var(--accent)}
+
+/* aviso de afiliado */
+.aviso-af{margin-top:24px;padding:18px 20px;border-radius:14px;
+  border:1px solid rgba(232,200,106,.3);background:rgba(232,200,106,.06)}
+.aviso-af b{display:block;color:var(--ink-1);font-size:14px;font-weight:700;margin-bottom:7px}
+.aviso-af p{color:var(--ink-3);font-size:13.5px;line-height:1.65;margin-bottom:8px}
+.aviso-af p:last-child{margin-bottom:0}
+
+/* seletor do carro */
+.seletor{margin-top:22px;padding:22px 20px;border-radius:16px;border:1px solid var(--line);
+  background:var(--surface-2)}
+.seletor .rot{color:var(--ink-5);margin-bottom:12px}
+.sel-grade{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:560px){.sel-grade{grid-template-columns:1fr 1fr 1fr}}
+.campo label{display:block;color:var(--ink-4);font-size:12.5px;margin-bottom:6px}
+select{width:100%;padding:14px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-1);font-family:var(--font);font-size:15.5px;
+  letter-spacing:-.02em;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2388826F' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+select:focus{outline:none;border-color:rgba(232,200,106,.45)}
+select:disabled{opacity:.45}
+
+/* resultado */
+.convite{margin-top:22px;padding:24px;border-radius:16px;border:1px dashed var(--line-2);
+  text-align:center;color:var(--ink-4);font-size:14.5px}
+.selo-precos{margin-top:18px;color:var(--ink-5);font-size:12.5px;text-align:center;line-height:1.6}
+.grupo-h{margin:32px 0 2px}
+.grupo-h h2{color:var(--ink-1);font-size:clamp(18px,4vw,23px);font-weight:600;letter-spacing:-.04em}
+.pecas{margin-top:14px;display:grid;gap:12px}
+.peca{border-radius:16px;padding:18px;border:1px solid var(--line);background:var(--surface-2)}
+.peca-cab{display:flex;align-items:flex-start;gap:12px}
+.peca-cab h3{color:var(--ink-1);font-size:16px;font-weight:600;letter-spacing:-.03em;flex:1 1 auto}
+.peca-cab .marcar{flex:0 0 auto;display:flex;align-items:center;gap:7px;color:var(--ink-4);
+  font-size:12px;cursor:pointer;user-select:none}
+.peca-cab input[type=checkbox]{width:18px;height:18px;accent-color:#E8C86A;cursor:pointer}
+.peca .dica{color:var(--ink-4);font-size:13px;line-height:1.6;margin-top:7px}
+.oficina{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:99px;
+  font-size:var(--t-micro);letter-spacing:var(--tr-micro);text-transform:uppercase;font-weight:700;
+  background:rgba(217,145,63,.16);color:var(--alerta-hi)}
+.acao-garimpo{margin-top:12px}
+.acao-garimpo .btn{width:100%}
+@media(min-width:640px){.acao-garimpo .btn{width:auto}}
+.opcoes{margin-top:14px;display:grid;gap:9px}
+.opcao{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 14px;
+  border-radius:12px;background:rgba(0,0,0,.26);border:1px solid var(--line)}
+.opcao .tit{flex:1 1 220px;color:var(--ink-2);font-size:13.5px;line-height:1.5;min-width:0}
+.opcao .valor{flex:0 0 auto;color:var(--ink-1);font-size:14.5px;font-weight:600;
+  font-family:var(--mono)}
+.opcao .valor.sem{color:var(--ink-5);font-family:var(--font);font-weight:400;font-size:12.5px}
+.opcao .btn{flex:0 0 auto}
+@media(max-width:520px){.opcao .btn{flex:1 1 100%}}
+
+/* conta da peca: faixa de referencia + valor do aluno */
+.conta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.ref-fx{font-size:12.5px;color:var(--ink-4)}
+.ref-fx b{color:var(--ink-2);font-weight:600}
+.btn-usar{padding:7px 11px;border-radius:8px;border:1px solid var(--line-2);background:transparent;
+  color:var(--accent);font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.btn-usar:hover{border-color:rgba(232,200,106,.4)}
+input.preco{width:130px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-1);font-family:var(--font);font-size:15px}
+input.preco:focus{outline:none;border-color:rgba(232,200,106,.45)}
+.selo-exemplo{margin-top:14px;padding:10px 14px;border-radius:10px;border:1px solid rgba(217,145,63,.4);
+  background:rgba(217,145,63,.08);color:var(--alerta-hi);font-size:12.5px;line-height:1.55}
+.barra-total{position:fixed;left:0;right:0;bottom:0;background:var(--surface-2);
+  border-top:1px solid var(--line-2);padding:12px 20px;display:none;z-index:9}
+.barra-total.on{display:block}
+.barra-total .bt-in{max-width:760px;margin:0 auto;display:flex;align-items:baseline;gap:14px;
+  flex-wrap:wrap;font-size:13.5px;color:var(--ink-3)}
+.barra-total b{color:var(--ink-1);font-family:var(--mono);font-size:16px}
+
+/* total */
+.total-cx{margin-top:24px;padding:22px 20px;border-radius:16px;
+  border:1px solid rgba(232,200,106,.28);background:rgba(232,200,106,.05)}
+.total-cx .rot{color:var(--accent);margin-bottom:8px}
+.total-n{color:var(--ink-1);font-size:clamp(22px,5vw,30px);font-weight:600;letter-spacing:-.04em;
+  font-family:var(--mono)}
+.total-cx .sub{color:var(--ink-4);font-size:13px;margin-top:6px;line-height:1.6}
+.total-cx .nota{color:var(--ink-3);font-size:13px;margin-top:10px;line-height:1.6}
+
+/* isencao, em primeira pessoa do Maykell */
+.ro-isencao{margin-top:26px;padding:16px 18px;border-radius:13px;
+  border:1px solid var(--line-2);background:rgba(232,200,106,.05)}
+.ro-isencao p{color:var(--ink-2);font-size:14px;font-weight:600;letter-spacing:-.02em;line-height:1.6}
+
+/* pagina nao pronta */
+.nao-pronto{margin-top:26px;padding:24px;border-radius:16px;
+  border:1px dashed rgba(224,100,74,.45);background:rgba(224,100,74,.06)}
+.nao-pronto b{display:block;color:var(--danger-hi);font-size:15px;font-weight:700;margin-bottom:10px}
+.nao-pronto p{color:var(--ink-3);font-size:14px;line-height:1.65;margin-bottom:9px}
+.nao-pronto ol{color:var(--ink-3);font-size:14px;line-height:1.8;margin:10px 0 0 20px}
+.nao-pronto code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:5px;
+  font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+
+/* rodape */
+footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);text-align:center}
+footer p{color:var(--ink-5);font-size:12px;line-height:1.75}
+footer b{color:var(--ink-4)}
+
+@media(max-width:520px){header{padding:36px 0 22px}.peca{padding:16px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="selo micro">Maykell Gomes · 12 anos de leilão</div>
+    <h1>Peças de picape, <span>já garimpadas</span></h1>
+    <p>Escolha o carro e as peças que o lote precisa. Cada peça abre a busca do jeito certo no Mercado Livre, e as que eu já garimpei vêm com o anúncio que eu indico.</p>
+  </header>
+
+  <div id="corpo"></div>
+
+  <footer>
+    <p><b>Peças de picape</b> · seleção do Maykell Gomes</p>
+    <p>Esta página não é um canal oficial do Mercado Livre.</p>
+    <p>Preço, disponibilidade e vendedor mudam no Mercado Livre sem avisar. O que está aqui é o anúncio que eu indico, não uma garantia de preço nem de estoque. Confira tudo no próprio anúncio antes de pagar.</p>
+  </footer>
+</div>
+
+<div id="barraTotal" class="barra-total"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   CFG
+   ============================================================ */
+var CFG = {
+  /* O PRECO NASCE DESLIGADO. So ligar com DUAS coisas em maos:
+     1. a autorizacao POR ESCRITO do ML pra exibir titulo/preco/foto
+        da API a visitantes (dev 5.1; protocolo guardado);
+     2. o robo de preco no ar (GitHub Action + precos.json).
+     Ligar sem isso e risco de suspensao (dev 2(f)). */
+  MOSTRAR_PRECO: false,
+
+  /* dominio metodomaykell.com.br declarado como midia na conta de
+     afiliado em 12/10/2026 (painel > Perfil de afiliado > Otra red). */
+  DOMINIO_DECLARADO: true,
+
+  /* de onde vem o preco quando a flag liga. Gerado pelo robo, nunca a mao. */
+  PRECOS_URL: 'precos.json',
+
+  /* preco com mais que isso de idade SOME sozinho, e o total junto.
+     6h de ciclo do robo + 45min de folga pro cron atrasar sem piscar. */
+  VALIDADE_MS: (6 * 60 + 45) * 60 * 1000
+};
+
+/* Etiquetas de rastreio: por SUPERFICIE, nunca por carro (teto de 100,
+   nao se apagam). A etiqueta pecas_picape ja vai EMBUTIDA nos links na
+   hora em que o Higor gera no painel. O runtime nao mexe em atribuicao. */
+
+/* ============================================================
+   CATALOGO:INICIO
+   Gerado por gerar_base.py a partir de pecas.json.
+   NAO EDITAR A MAO. Mexeu no json? roda: python3 gerar_base.py
+   ============================================================ */
+var CATALOGO = {"conferido_em":"","ref_exemplo":true,"ref_conferida_em":"","picapes":[{"marca":"Ford","modelo":"F-250","slug":"ford-f250","anos":[],"pecas":[{"id":"f01","grupo":"frente","nome":"Parachoque dianteiro","opcoes":[],"q":"parachoque dianteiro","ref":{"min":900,"max":1600}},{"id":"f02","grupo":"frente","nome":"Capo","opcoes":[],"q":"capo","ref":{"min":1200,"max":2200}},{"id":"f03","grupo":"frente","nome":"Grade dianteira","opcoes":[],"q":"grade dianteira","ref":{"min":350,"max":900}},{"id":"f04","grupo":"frente","nome":"Farol direito","opcoes":[],"q":"farol direito","ref":{"min":350,"max":700}},{"id":"f05","grupo":"frente","nome":"Farol esquerdo","opcoes":[],"q":"farol esquerdo","ref":{"min":350,"max":700}},{"id":"f06","grupo":"frente","nome":"Farol de milha ou neblina","opcoes":[],"q":"farol de milha","ref":{"min":120,"max":350}},{"id":"f07","grupo":"frente","nome":"Paralama dianteiro direito","opcoes":[],"q":"paralama dianteiro direito","ref":{"min":400,"max":800}},{"id":"f08","grupo":"frente","nome":"Paralama dianteiro esquerdo","opcoes":[],"q":"paralama dianteiro esquerdo","ref":{"min":400,"max":800}},{"id":"f09","grupo":"frente","nome":"Radiador","opcoes":[],"q":"radiador","ref":{"min":600,"max":1200}},{"id":"f10","grupo":"frente","nome":"Condensador do ar","opcoes":[],"q":"condensador ar condicionado","ref":{"min":500,"max":1000}},{"id":"f11","grupo":"frente","nome":"Eletroventilador","opcoes":[],"q":"eletroventilador","ref":{"min":500,"max":1100}},{"id":"f12","grupo":"frente","nome":"Painel frontal (travessa)","dica":"E a estrutura atras do parachoque. Se ela amassou, o servico e de funilaria, nao so troca de peca.","opcoes":[],"q":"painel frontal","ref":{"min":500,"max":1100}},{"id":"t01","grupo":"traseira","nome":"Parachoque traseiro","opcoes":[],"q":"parachoque traseiro","ref":{"min":700,"max":1300}},{"id":"t02","grupo":"traseira","nome":"Tampa do porta-malas","opcoes":[],"q":"tampa porta malas","ref":{"min":1000,"max":2000}},{"id":"t03","grupo":"traseira","nome":"Lanterna direita","opcoes":[],"q":"lanterna traseira direita","ref":{"min":180,"max":400}},{"id":"t04","grupo":"traseira","nome":"Lanterna esquerda","opcoes":[],"q":"lanterna traseira esquerda","ref":{"min":180,"max":400}},{"id":"t05","grupo":"traseira","nome":"Painel traseiro","dica":"Painel traseiro amassado costuma vir junto com assoalho torto. Olhe o vao da tampa nas fotos.","opcoes":[],"q":"painel traseiro","ref":{"min":500,"max":1000}},{"id":"t06","grupo":"traseira","nome":"Paralama traseiro direito","opcoes":[],"q":"paralama traseiro direito","ref":{"min":450,"max":900}},{"id":"t07","grupo":"traseira","nome":"Paralama traseiro esquerdo","opcoes":[],"q":"paralama traseiro esquerdo","ref":{"min":450,"max":900}},{"id":"l01","grupo":"lateral","nome":"Porta dianteira direita","opcoes":[],"q":"porta dianteira direita","ref":{"min":900,"max":1800}},{"id":"l02","grupo":"lateral","nome":"Porta dianteira esquerda","opcoes":[],"q":"porta dianteira esquerda","ref":{"min":900,"max":1800}},{"id":"l03","grupo":"lateral","nome":"Porta traseira direita","opcoes":[],"q":"porta traseira direita","ref":{"min":900,"max":1800}},{"id":"l04","grupo":"lateral","nome":"Porta traseira esquerda","opcoes":[],"q":"porta traseira esquerda","ref":{"min":900,"max":1800}},{"id":"l05","grupo":"lateral","nome":"Retrovisor direito","opcoes":[],"q":"retrovisor direito","ref":{"min":250,"max":600}},{"id":"l06","grupo":"lateral","nome":"Retrovisor esquerdo","opcoes":[],"q":"retrovisor esquerdo","ref":{"min":250,"max":600}},{"id":"l07","grupo":"lateral","nome":"Soleira","opcoes":[],"q":"soleira","ref":{"min":250,"max":600}},{"id":"l08","grupo":"lateral","nome":"Caixa de ar","opcoes":[],"q":"caixa de ar","ref":{"min":300,"max":700}},{"id":"v01","grupo":"vidros","nome":"Parabrisa","opcoes":[],"q":"parabrisa","ref":{"min":500,"max":1000}},{"id":"v02","grupo":"vidros","nome":"Vidro traseiro","opcoes":[],"q":"vidro traseiro","ref":{"min":400,"max":900}},{"id":"v03","grupo":"vidros","nome":"Vidro de porta","opcoes":[],"q":"vidro porta","ref":{"min":200,"max":450}},{"id":"s01","grupo":"seguranca","nome":"Airbag do volante","dica":"Airbag estourado nao se resolve no Mercado Livre. E peca de seguranca: oficina com peca nova mais a reprogramacao do modulo. Poe aqui o orcamento da oficina.","semML":true},{"id":"s02","grupo":"seguranca","nome":"Airbag do passageiro","dica":"Mesma coisa do volante: orcamento de oficina, nao anuncio de internet.","semML":true},{"id":"s03","grupo":"seguranca","nome":"Modulo do airbag","dica":"Depois que o airbag dispara, o modulo grava o evento e trava. Sem reprogramar, a luz nao apaga e o carro nao passa em vistoria.","semML":true},{"id":"s04","grupo":"seguranca","nome":"Cinto de seguranca","dica":"Cinto que travou no impacto tambem e item de seguranca. Troca em oficina.","semML":true},{"id":"r01","grupo":"rodas","nome":"Roda","opcoes":[],"q":"roda","ref":{"min":400,"max":900}},{"id":"r02","grupo":"rodas","nome":"Pneu","opcoes":[],"q":"pneu","ref":{"min":450,"max":900}},{"id":"r03","grupo":"rodas","nome":"Amortecedor","opcoes":[],"q":"amortecedor","ref":{"min":250,"max":600}},{"id":"r04","grupo":"rodas","nome":"Bandeja da suspensao","opcoes":[],"q":"bandeja suspensao","ref":{"min":200,"max":500}},{"id":"r05","grupo":"rodas","nome":"Ponta de eixo","opcoes":[],"q":"ponta de eixo","ref":{"min":250,"max":600}},{"id":"r06","grupo":"rodas","nome":"Cubo de roda","opcoes":[],"q":"cubo de roda","ref":{"min":200,"max":500}},{"id":"i01","grupo":"interior","nome":"Painel","opcoes":[],"q":"painel","ref":{"min":800,"max":2000}},{"id":"i02","grupo":"interior","nome":"Forro de porta","opcoes":[],"q":"forro de porta","ref":{"min":150,"max":400}},{"id":"i03","grupo":"interior","nome":"Banco","opcoes":[],"q":"banco","ref":{"min":500,"max":1500}}]}]};
+/* ============================================================
+   CATALOGO:FIM
+   ============================================================ */
+
+var GRUPOS = [
+  { id:'frente',    t:'Frente' },
+  { id:'traseira',  t:'Traseira' },
+  { id:'lateral',   t:'Laterais' },
+  { id:'vidros',    t:'Vidros' },
+  { id:'rodas',     t:'Rodas e suspensão' },
+  { id:'interior',  t:'Interior' },
+  { id:'seguranca', t:'Segurança: isso não se compra em anúncio' }
+];
+
+var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+
+function dataBr(s){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : String(s || '');
+}
+
+function brl(v){
+  try { return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
+  catch(e){ return 'R$ ' + v.toFixed(2).replace('.', ','); }
+}
+
+/* ---------- o filtro que impede link torto de ir pra tela ----------
+   O gerar_base.py ja barrou no build; este aqui e o cinto duplo do runtime. */
+var PROIBIDOS = ['/cart', 'carrinho', 'checkout', 'lista.mercadolivre', 'busca',
+                 '/search', 'perfil/', '/favoritos', 'mercadolivre.com.br/ofertas'];
+
+function urlValida(u){
+  if (!u) return false;
+  var b = String(u).toLowerCase();
+  if (b.indexOf('https://') !== 0) return false;
+  for (var i = 0; i < PROIBIDOS.length; i++){
+    if (b.indexOf(PROIBIDOS[i]) !== -1){
+      console.warn('[picape] link recusado por apontar pra pagina nao elegivel: ' + u);
+      return false;
+    }
+  }
+  return true;
+}
+
+function opcoesVivas(p){
+  return (p.opcoes || []).filter(function(o){ return urlValida(o.link_afiliado); });
+}
+
+function temVivas(){
+  var n = 0;
+  CATALOGO.picapes.forEach(function(pic){
+    pic.pecas.forEach(function(p){ n += opcoesVivas(p).length; });
+  });
+  return n;
+}
+
+/* ---------- precos (so com a flag ligada) ---------- */
+var PRECOS = null;   /* {atualizado_em, itens:{MLB...:{preco,status,condicao}}} */
+
+function precoFresco(){
+  if (!CFG.MOSTRAR_PRECO || !PRECOS || !PRECOS.atualizado_em) return false;
+  var t = Date.parse(PRECOS.atualizado_em);
+  if (isNaN(t)) return false;
+  return (Date.now() - t) <= CFG.VALIDADE_MS;
+}
+
+function precoDe(opcao){
+  /* devolve o numero SO se o dado existe, esta fresco, o anuncio esta
+     ativo e a peca e nova. Qualquer outra coisa: null, e a tela degrada. */
+  if (!precoFresco()) return null;
+  var it = PRECOS.itens && PRECOS.itens[opcao.mlb];
+  if (!it) return null;
+  if (it.status !== 'active') return null;
+  if (it.condicao && it.condicao !== 'new') return null;
+  if (typeof it.preco !== 'number' || !(it.preco > 0)) return null;
+  return it.preco;
+}
+
+function opcaoForaDoAr(opcao){
+  /* com dado fresco em maos, anuncio pausado/usado SOME da tela (dev 5.2) */
+  if (!precoFresco()) return false;
+  var it = PRECOS.itens && PRECOS.itens[opcao.mlb];
+  if (!it) return false;
+  return it.status !== 'active' || (it.condicao && it.condicao !== 'new');
+}
+
+function carregarPrecos(fim){
+  if (!CFG.MOSTRAR_PRECO){ fim(); return; }
+  try {
+    fetch(CFG.PRECOS_URL + '?v=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ PRECOS = j || null; fim(); })
+      .catch(function(){ PRECOS = null; fim(); });
+  } catch(e){ PRECOS = null; fim(); }
+}
+
+function seloPrecos(){
+  if (!precoFresco()) return '';
+  var d = new Date(Date.parse(PRECOS.atualizado_em));
+  function z(n){ return (n < 10 ? '0' : '') + n; }
+  var tx = z(d.getDate()) + '/' + z(d.getMonth() + 1) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+  return '<div class="selo-precos">Preços e disponibilidade atualizados a cada 6 horas. ' +
+    'Última atualização em ' + tx + '. O preço pode mudar: confira no anúncio.</div>';
+}
+
+/* ---------- estado da tela ---------- */
+var SEL = { marca:'', modelo:'', ano:'' };
+var LOTE = null;   /* ids vindos de ?pecas= (o aluno marcou no portal); null = pagina inteira */
+var PRECOS_ALUNO = {};   /* id da peca -> o valor que a pessoa anotou no garimpo */
+
+/* A conta nao pode morrer no F5: a pessoa leva tempo garimpando. localStorage
+   e conveniencia por navegador; falhou (aba anonima), a pagina segue sem. */
+var LS = 'picape-v1';
+function lsGravar(){
+  try { localStorage.setItem(LS, JSON.stringify({sel: SEL, marcadas: MARCADAS, precos: PRECOS_ALUNO})); }
+  catch(e){}
+}
+function lsCarregar(){
+  try {
+    var t = JSON.parse(localStorage.getItem(LS) || '{}') || {};
+    if (t.sel && t.sel.marca) SEL = t.sel;
+    if (t.marcadas) MARCADAS = t.marcadas;
+    if (t.precos) PRECOS_ALUNO = t.precos;
+  } catch(e){}
+}
+function num(v){
+  v = String(v == null ? '' : v).replace(/[^0-9,\.]/g, '').replace(/\./g, '').replace(',', '.');
+  var n = parseFloat(v);
+  return (isNaN(n) || n <= 0) ? 0 : n;
+}
+var MARCADAS = {};   /* id da peca -> true, so pro total; nada persiste */
+
+function picapeAtual(){
+  for (var i = 0; i < CATALOGO.picapes.length; i++){
+    var p = CATALOGO.picapes[i];
+    if (p.marca === SEL.marca && p.modelo === SEL.modelo) return p;
+  }
+  return null;
+}
+
+/* ---------- blocos da tela ---------- */
+function avisoAfiliado(){
+  return '<div class="aviso-af">' +
+    '<b>Publicidade: esta página tem links de afiliado</b>' +
+    '<p>Os links de compra daqui são de afiliado do Mercado Livre. Comprando por eles, a gente ' +
+    'recebe uma comissão, <em>sem nenhum custo a mais pra você</em>: o preço é o mesmo que você ' +
+    'pagaria entrando direto.</p>' +
+    '<p>Isso não muda o que eu indico. O que não presta não entra aqui por pagar melhor.</p>' +
+    '</div>';
+}
+
+function naoPronto(){
+  /* O garimpo funciona sem nenhum link do painel, entao links curados NAO
+     bloqueiam mais a publicacao. So bloqueia o que quebraria a pagina. */
+  var faltando = [];
+  if (!CATALOGO.picapes.length) faltando.push('o catálogo de picapes e peças (<code>pecas.json</code> + <code>gerar_base.py</code>)');
+  if (!CFG.DOMINIO_DECLARADO) faltando.push('o domínio desta página declarado no cadastro de afiliado');
+  return '<div class="nao-pronto">' +
+    '<b>Esta página ainda não está pronta pra publicar.</b>' +
+    '<ol><li>' + faltando.join('</li><li>') + '</li></ol>' +
+    '</div>';
+}
+
+function blocoSeletor(){
+  var marcas = [];
+  CATALOGO.picapes.forEach(function(p){
+    if (marcas.indexOf(p.marca) === -1) marcas.push(p.marca);
+  });
+  var modelos = CATALOGO.picapes.filter(function(p){ return p.marca === SEL.marca; })
+    .map(function(p){ return p.modelo; });
+  var pic = picapeAtual();
+  var anos = (pic && pic.anos && pic.anos.length) ? pic.anos : [];
+
+  function opts(lista, atual, vazio){
+    var h = '<option value="">' + esc(vazio) + '</option>';
+    lista.forEach(function(v){
+      h += '<option value="' + esc(v) + '"' + (v === atual ? ' selected' : '') + '>' + esc(v) + '</option>';
+    });
+    return h;
+  }
+  return '<div class="seletor">' +
+    '<div class="rot micro">Qual é o carro</div>' +
+    '<div class="sel-grade">' +
+    '<div class="campo"><label for="selMarca">Marca</label>' +
+    '<select id="selMarca">' + opts(marcas, SEL.marca, 'Escolha') + '</select></div>' +
+    '<div class="campo"><label for="selModelo">Modelo</label>' +
+    '<select id="selModelo"' + (SEL.marca ? '' : ' disabled') + '>' +
+    opts(modelos, SEL.modelo, 'Escolha') + '</select></div>' +
+    '<div class="campo"><label for="selAno">Ano</label>' +
+    '<select id="selAno"' + (SEL.modelo ? '' : ' disabled') + '>' +
+    (anos.length ? opts(anos, SEL.ano, 'Escolha') : '<option value="">Todos os anos</option>') +
+    '</select></div>' +
+    '</div></div>';
+}
+
+function anoOk(opcao){
+  /* opcao pode declarar anos:[...]; sem declarar, vale pra faixa toda */
+  if (!opcao.anos || !opcao.anos.length || !SEL.ano) return true;
+  return opcao.anos.indexOf(SEL.ano) !== -1;
+}
+
+/* ---------- o garimpo: a busca certa, SEM afiliado ----------
+   TRAVA DE CONFORMIDADE, igual a do portal: este link vai pra PAGINA DE BUSCA
+   do Mercado Livre, que NAO e elegivel pro programa de afiliados (3.1.2 d).
+   NUNCA acrescentar matt_tool, matt_word, etiqueta ou qualquer parametro de
+   afiliado nesta URL. O sufixo _OrderId_PRICE_NoIndex_True e ORDENACAO por
+   menor preco (formato conferido pelo Higor em 11/10/2026), nao afiliado.
+   A comissao vem dos produtos indicados, cada um com link proprio do painel.
+   Sao coisas separadas de proposito. */
+function slugBusca(txt){
+  return String(txt || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+function urlGarimpo(p){
+  var carro = [SEL.marca, SEL.modelo, SEL.ano].filter(function(x){ return String(x || '').trim(); }).join(' ');
+  return 'https://lista.mercadolivre.com.br/acessorios-veiculos/' + slugBusca(p.q + ' ' + carro) +
+    '_OrderId_PRICE_NoIndex_True';
+}
+
+function linhaOpcao(o){
+  var cel;
+  var v = precoDe(o);
+  if (v !== null){
+    cel = '<span class="valor">' + esc(brl(v)) + '</span>';
+  } else {
+    cel = '<span class="valor sem">preço no Mercado Livre</span>';
+  }
+  /* O href e o link do painel, byte a byte. rel=sponsored identifica
+     publicidade; noopener e seguranca de aba. Sem onclick, sem redirect. */
+  return '<div class="opcao">' +
+    '<span class="tit">' + esc(o.titulo) + '</span>' +
+    cel +
+    '<a class="btn btn-1" href="' + esc(o.link_afiliado) + '" target="_blank" ' +
+    'rel="sponsored noopener">Comprar no Mercado Livre</a>' +
+    '</div>';
+}
+
+function marcador(p){
+  return '<label class="marcar"><input type="checkbox" data-peca="' + esc(p.id) + '"' +
+    (MARCADAS[p.id] ? ' checked' : '') + '> entra na conta</label>';
+}
+
+function campoConta(p){
+  /* O campo NASCE VAZIO de proposito: numero sugerido vira ancora. A faixa de
+     referencia fica ao lado, e "usar" e o botao que a pessoa ESCOLHE apertar. */
+  var fx = '';
+  if (p.ref){
+    fx = '<span class="ref-fx">referência: <b>' + esc(brl(p.ref.min)) + ' a ' + esc(brl(p.ref.max)) + '</b></span>' +
+      '<button type="button" class="btn-usar" data-usar="' + esc(p.id) + '">usar</button>';
+  }
+  return '<div class="conta">' + fx +
+    '<input class="preco" type="text" inputmode="decimal" placeholder="R$" ' +
+    'data-preco="' + esc(p.id) + '" value="' + esc(PRECOS_ALUNO[p.id] || '') + '">' +
+    '</div>';
+}
+
+function blocoPeca(p){
+  if (p.semML){
+    return '<div class="peca">' +
+      '<div class="peca-cab"><h3>' + esc(p.nome) + '</h3>' + marcador(p) + '</div>' +
+      (p.dica ? '<div class="dica">' + esc(p.dica) + '</div>' : '') +
+      '<span class="oficina">Orçamento de oficina</span>' +
+      (MARCADAS[p.id] ? campoConta(p) : '') +
+      '</div>';
+  }
+  var vivas = opcoesVivas(p).filter(anoOk).filter(function(o){ return !opcaoForaDoAr(o); });
+  return '<div class="peca">' +
+    '<div class="peca-cab"><h3>' + esc(p.nome) + '</h3>' + marcador(p) + '</div>' +
+    (p.dica ? '<div class="dica">' + esc(p.dica) + '</div>' : '') +
+    (MARCADAS[p.id] ? campoConta(p) : '') +
+    (vivas.length ? '<div class="opcoes">' + vivas.map(linhaOpcao).join('') + '</div>' : '') +
+    '<div class="acao-garimpo"><a class="btn btn-2" href="' + esc(urlGarimpo(p)) + '" ' +
+    'target="_blank" rel="noopener">Garimpar no Mercado Livre</a></div>' +
+    '</div>';
+}
+
+function pecasMarcadasDe(pic){
+  return pic.pecas.filter(function(p){ return MARCADAS[p.id]; });
+}
+
+function blocoConta(pic){
+  /* O total e o DO ALUNO: soma do que ele anotou. A estimativa pela
+     referencia e informativa e vem carimbada (exemplo ou data). */
+  var marcadas = pecasMarcadasDe(pic);
+  if (!marcadas.length) return '';
+  var t = 0, com = 0, sem = 0, emin = 0, emax = 0, temRef = false;
+  marcadas.forEach(function(p){
+    var v = num(PRECOS_ALUNO[p.id]);
+    if (v){ t += v; com++; } else { sem++; }
+    if (p.ref){ emin += p.ref.min; emax += p.ref.max; temRef = true; }
+  });
+  var h = '<div class="total-cx" id="totalConta">' +
+    '<div class="rot micro">A conta das peças deste lote</div>' +
+    (com ? '<div class="total-n">' + esc(brl(t)) + '</div>' : '') +
+    '<div class="sub">' + marcadas.length + (marcadas.length === 1 ? ' peça marcada' : ' peças marcadas') +
+    (com ? ', ' + com + ' com preço anotado' : '') +
+    (sem ? ', ' + sem + ' ainda sem preço.' : ', todas com preço.') + '</div>';
+  if (sem) h += '<div class="nota">Enquanto tiver peça sem preço, esse total está por baixo do real.</div>';
+  if (temRef){
+    h += '<div class="sub" style="margin-top:8px">Estimativa pela referência: <b>' +
+      esc(brl(emin)) + ' a ' + esc(brl(emax)) + '</b>' +
+      (CATALOGO.ref_exemplo ? ' (faixas de exemplo, a conferir)' :
+        (CATALOGO.ref_conferida_em ? ' (conferida em ' + esc(dataBr(CATALOGO.ref_conferida_em)) + ')' : '')) +
+      '. O preço que vale é o que você anota depois de conferir no anúncio.</div>';
+  }
+  return h + '</div>';
+}
+
+function barraTotal(){
+  var el2 = $('barraTotal');
+  if (!el2) return;
+  var pic = picapeAtual();
+  var marcadas = pic ? pecasMarcadasDe(pic) : [];
+  if (!marcadas.length){ el2.className = 'barra-total'; el2.innerHTML = ''; return; }
+  var t = 0, sem = 0;
+  marcadas.forEach(function(p){ var v = num(PRECOS_ALUNO[p.id]); if (v) t += v; else sem++; });
+  el2.className = 'barra-total on';
+  el2.innerHTML = '<div class="bt-in"><span>' + marcadas.length +
+    (marcadas.length === 1 ? ' peça' : ' peças') + '</span><b>' + esc(brl(t)) + '</b>' +
+    (sem ? '<span>' + sem + ' sem preço</span>' : '<span>todas com preço</span>') + '</div>';
+}
+
+function isencao(){
+  return '<div class="ro-isencao"><p>A indicação é minha, a decisão é sua. Preço e vendedor mudam, ' +
+    'e peça cara é justamente o que mais derruba o teto de um lance. Confira o anúncio, some no seu ' +
+    'orçamento e não passe do seu teto.</p></div>';
+}
+
+function blocoResultado(){
+  var pic = picapeAtual();
+  if (!pic){
+    return '<div class="convite">Escolha a marca e o modelo ali em cima. ' +
+      'As peças aparecem aqui, separadas por região do carro.</div>';
+  }
+  var h = seloPrecos();
+  if (CATALOGO.ref_exemplo){
+    h += '<div class="selo-exemplo">As faixas de referência desta página ainda são EXEMPLO, não conferidas. ' +
+      'Use o garimpo e confira no anúncio antes de confiar em qualquer número.</div>';
+  }
+  var carroTxt = [SEL.marca, SEL.modelo, SEL.ano].filter(function(x){ return String(x || '').trim(); }).join(' ');
+  if (LOTE && LOTE.length){
+    h += '<div class="grupo-h" style="margin-top:24px"><h2>As peças que você marcou' +
+      (carroTxt ? ' pra ' + esc(carroTxt) : '') + '</h2>' +
+      '<p><a href="#" id="verTodas">ver todas as peças deste carro</a></p></div>';
+  }
+  GRUPOS.forEach(function(g){
+    var doGrupo = pic.pecas.filter(function(p){ return p.grupo === g.id; })
+      .filter(function(p){ return !LOTE || LOTE.indexOf(p.id) !== -1; })
+      .map(blocoPeca).filter(function(x){ return x !== ''; });
+    if (!doGrupo.length) return;
+    h += '<div class="grupo-h"><h2>' + esc(g.t) + '</h2></div>' +
+      '<div class="pecas">' + doGrupo.join('') + '</div>';
+  });
+  h += blocoConta(pic);
+  h += isencao();
+  if (temVivas() && CATALOGO.conferido_em){
+    h += '<div class="aviso-af" style="margin-top:22px"><b>Anúncios conferidos pelo Maykell em ' +
+      esc(dataBr(CATALOGO.conferido_em)) + '</b>' +
+      '<p>Achou um anúncio fora do ar ou muito fora de preço? Avisa no grupo que a gente troca.</p></div>';
+  }
+  return h;
+}
+
+/* ---------- montagem ---------- */
+function montar(){
+  /* O aviso de publicidade so existe quando ha ao menos 1 link de afiliado
+     vivo na pagina: aviso de afiliado em pagina sem afiliado e mentira. */
+  $('corpo').innerHTML = (temVivas() ? avisoAfiliado() : '') + blocoSeletor() +
+    '<div id="resultado">' + blocoResultado() + '</div>';
+  ligarEventos();
+}
+
+function render(){
+  if (!CATALOGO.picapes.length || !CFG.DOMINIO_DECLARADO){
+    $('corpo').innerHTML = naoPronto();
+    console.warn('[picape] pagina em montagem. Ver CFG e pecas.json.');
+    return;
+  }
+  montar();
+}
+
+function soResultado(){
+  var n = $('resultado');
+  if (n) n.innerHTML = blocoResultado();
+}
+
+function ligarEventos(){
+  var m = $('selMarca'), mo = $('selModelo'), a = $('selAno');
+  if (m) m.onchange = function(){
+    SEL.marca = this.value; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null;
+    montar();
+  };
+  if (mo) mo.onchange = function(){
+    SEL.modelo = this.value; SEL.ano = ''; MARCADAS = {}; LOTE = null;
+    montar();
+  };
+  if (a) a.onchange = function(){
+    SEL.ano = this.value; lsGravar();
+    soResultado(); religar();
+  };
+  religar();
+}
+
+function religar(){
+  ligarMarcar(); ligarVerTodas(); ligarConta(); barraTotal();
+}
+
+function ligarVerTodas(){
+  var v = $('verTodas');
+  if (!v) return;
+  v.onclick = function(ev){
+    ev.preventDefault();
+    LOTE = null;
+    try {
+      var u = new URL(location.href);
+      u.searchParams.delete('pecas');
+      history.replaceState(null, '', u.toString());
+    } catch(e){ /* sem History API: so re-renderiza */ }
+    montar();
+  };
+}
+
+function ligarMarcar(){
+  var caixas = document.querySelectorAll('input[data-peca]');
+  for (var i = 0; i < caixas.length; i++){
+    caixas[i].onchange = function(){
+      MARCADAS[this.getAttribute('data-peca')] = this.checked;
+      lsGravar();
+      soResultado(); religar();
+    };
+  }
+}
+
+function proximaSemPreco(aposId){
+  var pic = picapeAtual();
+  if (!pic) return null;
+  var ms = pecasMarcadasDe(pic).filter(function(p){ return !p.semML; });
+  var inicio = 0;
+  for (var i = 0; i < ms.length; i++){
+    if (ms[i].id === aposId){ inicio = i + 1; break; }
+  }
+  for (var j = 0; j < ms.length; j++){
+    var p = ms[(inicio + j) % ms.length];
+    if (p.id !== aposId && !num(PRECOS_ALUNO[p.id])) return p;
+  }
+  return null;
+}
+
+function atualizarConta(){
+  var pic = picapeAtual();
+  var cx = $('totalConta');
+  if (pic && cx){
+    var novo = blocoConta(pic);
+    if (novo) cx.outerHTML = novo;
+  }
+  barraTotal();
+}
+
+function ligarConta(){
+  var campos = document.querySelectorAll('input[data-preco]');
+  for (var i = 0; i < campos.length; i++){
+    campos[i].oninput = function(){
+      PRECOS_ALUNO[this.getAttribute('data-preco')] = this.value;
+      lsGravar(); atualizarConta();
+    };
+    campos[i].onkeydown = function(ev){
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      /* Enter = anotou esta, abre a BUSCA da proxima marcada sem preco e ja
+         foca o campo dela. E o garimpo guiado. A aba abre por gesto do
+         usuario (a tecla), em link de BUSCA sem afiliado: a regra de nunca
+         abrir link de AFILIADO por script continua inteira. */
+      var prox = proximaSemPreco(this.getAttribute('data-preco'));
+      if (!prox) return;
+      var a2 = document.createElement('a');
+      a2.href = urlGarimpo(prox); a2.target = '_blank'; a2.rel = 'noopener';
+      document.body.appendChild(a2); a2.click(); a2.remove();
+      var alvo = document.querySelector('input[data-preco="' + prox.id + '"]');
+      if (alvo) alvo.focus();
+    };
+  }
+  var botoes = document.querySelectorAll('button[data-usar]');
+  for (var k = 0; k < botoes.length; k++){
+    botoes[k].onclick = function(){
+      var id = this.getAttribute('data-usar');
+      var pic = picapeAtual();
+      if (!pic) return;
+      var alvo = null;
+      pic.pecas.forEach(function(x){ if (x.id === id) alvo = x; });
+      if (!alvo || !alvo.ref) return;
+      var meio = Math.round((alvo.ref.min + alvo.ref.max) / 2 / 10) * 10;
+      PRECOS_ALUNO[id] = String(meio);
+      lsGravar();
+      var campo = document.querySelector('input[data-preco="' + id + '"]');
+      if (campo) campo.value = String(meio);
+      atualizarConta();
+    };
+  }
+}
+
+/* deep-link: ?marca=Ford&modelo=F-250&ano=2015 pre-seleciona. Serve pro
+   portal linkar direto no carro do aluno e pros testes em headless. */
+function lerParametros(){
+  /* O portal manda o carro digitado livre ("ford", "f250", "F-250"). A
+     comparacao ignora caixa, espaco e hifen; se nada bater, abre normal. */
+  function norm(x){ return String(x || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  try {
+    var q = new URLSearchParams(location.search);
+    var ma = q.get('marca') || '', mo = q.get('modelo') || '', an = q.get('ano') || '';
+    CATALOGO.picapes.forEach(function(p){
+      if (norm(ma) && norm(p.marca) === norm(ma) && norm(p.modelo) === norm(mo)){
+        SEL.marca = p.marca; SEL.modelo = p.modelo;
+        if (an && p.anos){
+          p.anos.forEach(function(x){ if (norm(x) === norm(an)) SEL.ano = x; });
+        }
+      }
+    });
+    /* ?pecas=f01,t03 = o lote que o aluno marcou no portal. Id que nao existe
+       no catalogo e ignorado. As pecas do lote ja chegam marcadas pro total. */
+    var ps = q.get('pecas') || '';
+    if (ps && SEL.marca){
+      var ids = {};
+      CATALOGO.picapes.forEach(function(p){ p.pecas.forEach(function(x){ ids[x.id] = true; }); });
+      var l = [];
+      ps.split(',').forEach(function(x){
+        x = x.trim();
+        if (ids[x] && l.indexOf(x) === -1) l.push(x);
+      });
+      if (l.length){
+        LOTE = l;
+        l.forEach(function(id){ MARCADAS[id] = true; });
+      }
+    }
+  } catch(e){ /* navegador velho sem URLSearchParams: segue sem pre-selecao */ }
+}
+
+lsCarregar();
+if (SEL.marca && !picapeAtual()){ SEL = { marca:'', modelo:'', ano:'' }; }
+lerParametros();
+carregarPrecos(render);
+})();
+</script>
+</body>
+</html>

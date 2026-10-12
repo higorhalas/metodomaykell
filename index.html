@@ -4,17 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Método Maykell</title>
-<!-- A raiz so encaminha. O endereco fixo do Verificador e /verificador/, que e o
-     que vai nos anuncios: assim a raiz pode virar outra pagina no futuro sem
-     quebrar link de campanha que ja esta rodando.
-     12/10/2026: o encaminhamento preserva ?query e #hash, porque a raiz e a
-     URL de retorno OAuth do app da API (buscadorpecas) e o ?code= chegava
-     aqui e era descartado pelo meta refresh. JS preserva; o noscript cobre
-     navegador sem JS (ai o code se perde, mas o visitante chega). -->
-<script>location.replace('/verificador/' + location.search + location.hash);</script>
-<noscript><meta http-equiv="refresh" content="0; url=/verificador/"></noscript>
-<link rel="canonical" href="https://metodomaykell.com.br/verificador/">
+<!-- A raiz so encaminha, preservando ?query e #hash (a raiz e a URL de
+     retorno OAuth do app da API buscadorpecas; o ?code= nao pode se perder).
+     12/10/2026: a raiz passou a apontar pro Buscador de Pecas (/picape/),
+     a pedido do Higor. O Verificador CONTINUA em /verificador/, que e o
+     endereco fixo dos anuncios da campanha: nada de campanha quebra. -->
+<script>location.replace('/picape/' + location.search + location.hash);</script>
+<noscript><meta http-equiv="refresh" content="0; url=/picape/"></noscript>
+<link rel="canonical" href="https://metodomaykell.com.br/picape/">
 <style>body{font-family:system-ui,sans-serif;background:#0b0f1a;color:#e8ecf3;display:grid;place-items:center;min-height:100vh;margin:0}a{color:#7dd3fc}</style>
 </head>
-<body><p><a href="/verificador/">Abrir o Verificador de Leiloeiro</a></p></body>
+<body><p><a href="/picape/">Abrir o Buscador de Peças</a></p></body>
 </html>
