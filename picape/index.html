@@ -17,9 +17,16 @@
   Projeto leilao (Maykell Gomes). Pagina publica.
 
   O QUE ELA E, na frase do Higor: a pessoa seleciona marca, carro, ano e
-  as pecas que o carro vai precisar, aperta um botao, e recebe a PLANILHA
-  da pesquisa: um link de busca certo do Mercado Livre pra cada peca, numa
-  lista so, com botao de copiar e de baixar. Nada alem disso.
+  as pecas que o carro vai precisar, aperta Pesquisar, e recebe a tabela
+  com o anuncio achado de cada peca, o preco, o link (com o codigo de
+  afiliado do Higor) e o TOTAL do carro. Copiar e baixar a planilha.
+
+  MOTOR (CFG.MOTOR_URL): um worker na Cloudflare (pasta motor/) que busca
+  no Google Shopping via SerpApi e escolhe o anuncio do Mercado Livre. As
+  pecas vao em lotes de 5; peca que falhar ganha 1 nova tentativa sozinha.
+  MOTOR_URL vazio = a pagina cai no modo antigo (lista de links de busca).
+  Link de afiliado montado na URL do produto: DECISAO COMERCIAL do Higor
+  (12/10/2026), com base nas comissoes creditadas da skill do Maykell.
 
   REGRAS QUE VALEM AQUI:
   . Os links de busca NAO tem afiliado: pagina de busca nao e elegivel no
@@ -134,6 +141,16 @@ select:disabled{opacity:.45}
 .pl .ind .btn{padding:9px 13px;font-size:12.5px}
 .acoes-plan{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
 .acoes-plan .btn{flex:1 1 200px}
+.pl .tit{flex:1 1 100%;color:var(--ink-4);font-size:12.5px;line-height:1.5;margin-top:-4px}
+.pl .preco{flex:0 0 auto;color:var(--ink-1);font-family:var(--mono);font-size:15px;font-weight:700}
+.pl .esp{flex:0 0 auto;color:var(--ink-5);font-size:12.5px}
+.pl .falha{flex:0 0 auto;color:var(--alerta-hi);font-size:12.5px}
+.pl .comprar .btn{padding:9px 14px;font-size:12.5px}
+.total-pesq{margin-top:16px;padding:20px;border-radius:16px;
+  border:1px solid rgba(232,200,106,.3);background:rgba(232,200,106,.06)}
+.total-pesq .rot{color:var(--accent);margin-bottom:6px}
+.total-pesq .num{color:var(--ink-1);font-family:var(--mono);font-size:clamp(24px,5.4vw,32px);font-weight:700}
+.total-pesq .sub{color:var(--ink-4);font-size:13px;margin-top:6px;line-height:1.6}
 .copiado{color:var(--ok-hi);font-size:13px;margin-top:8px;display:none}
 .copiado.on{display:block}
 
@@ -177,7 +194,10 @@ footer b{color:var(--ink-4)}
 
 var CFG = {
   /* dominio declarado como midia na conta de afiliado em 12/10/2026 */
-  DOMINIO_DECLARADO: true
+  DOMINIO_DECLARADO: true,
+  /* endereco do worker /buscar. Vazio = modo antigo (so links de busca). */
+  MOTOR_URL: 'https://pesquisa-pecas.higorhenriquehalas.workers.dev/buscar',
+  LOTE: 5
 };
 
 /* ============================================================
@@ -185,7 +205,7 @@ var CFG = {
    Gerado por gerar_base.py a partir de pecas.json.
    NAO EDITAR A MAO. Mexeu no json? roda: python3 gerar_base.py
    ============================================================ */
-var CATALOGO = {"conferido_em":"","picapes":[{"marca":"Ford","modelo":"F-250","slug":"ford-f250","anos":[],"pecas":[{"id":"f01","grupo":"frente","nome":"Parachoque dianteiro","opcoes":[],"q":"parachoque dianteiro"},{"id":"f02","grupo":"frente","nome":"Capo","opcoes":[],"q":"capo"},{"id":"f03","grupo":"frente","nome":"Grade dianteira","opcoes":[],"q":"grade dianteira"},{"id":"f04","grupo":"frente","nome":"Farol direito","opcoes":[],"q":"farol direito"},{"id":"f05","grupo":"frente","nome":"Farol esquerdo","opcoes":[],"q":"farol esquerdo"},{"id":"f06","grupo":"frente","nome":"Farol de milha ou neblina","opcoes":[],"q":"farol de milha"},{"id":"f07","grupo":"frente","nome":"Paralama dianteiro direito","opcoes":[],"q":"paralama dianteiro direito"},{"id":"f08","grupo":"frente","nome":"Paralama dianteiro esquerdo","opcoes":[],"q":"paralama dianteiro esquerdo"},{"id":"f09","grupo":"frente","nome":"Radiador","opcoes":[],"q":"radiador"},{"id":"f10","grupo":"frente","nome":"Condensador do ar","opcoes":[],"q":"condensador ar condicionado"},{"id":"f11","grupo":"frente","nome":"Eletroventilador","opcoes":[],"q":"eletroventilador"},{"id":"f12","grupo":"frente","nome":"Painel frontal (travessa)","dica":"E a estrutura atras do parachoque. Se ela amassou, o servico e de funilaria, nao so troca de peca.","opcoes":[],"q":"painel frontal"},{"id":"t01","grupo":"traseira","nome":"Parachoque traseiro","opcoes":[],"q":"parachoque traseiro"},{"id":"t02","grupo":"traseira","nome":"Tampa do porta-malas","opcoes":[],"q":"tampa porta malas"},{"id":"t03","grupo":"traseira","nome":"Lanterna direita","opcoes":[],"q":"lanterna traseira direita"},{"id":"t04","grupo":"traseira","nome":"Lanterna esquerda","opcoes":[],"q":"lanterna traseira esquerda"},{"id":"t05","grupo":"traseira","nome":"Painel traseiro","dica":"Painel traseiro amassado costuma vir junto com assoalho torto. Olhe o vao da tampa nas fotos.","opcoes":[],"q":"painel traseiro"},{"id":"t06","grupo":"traseira","nome":"Paralama traseiro direito","opcoes":[],"q":"paralama traseiro direito"},{"id":"t07","grupo":"traseira","nome":"Paralama traseiro esquerdo","opcoes":[],"q":"paralama traseiro esquerdo"},{"id":"l01","grupo":"lateral","nome":"Porta dianteira direita","opcoes":[],"q":"porta dianteira direita"},{"id":"l02","grupo":"lateral","nome":"Porta dianteira esquerda","opcoes":[],"q":"porta dianteira esquerda"},{"id":"l03","grupo":"lateral","nome":"Porta traseira direita","opcoes":[],"q":"porta traseira direita"},{"id":"l04","grupo":"lateral","nome":"Porta traseira esquerda","opcoes":[],"q":"porta traseira esquerda"},{"id":"l05","grupo":"lateral","nome":"Retrovisor direito","opcoes":[],"q":"retrovisor direito"},{"id":"l06","grupo":"lateral","nome":"Retrovisor esquerdo","opcoes":[],"q":"retrovisor esquerdo"},{"id":"l07","grupo":"lateral","nome":"Soleira","opcoes":[],"q":"soleira"},{"id":"l08","grupo":"lateral","nome":"Caixa de ar","opcoes":[],"q":"caixa de ar"},{"id":"v01","grupo":"vidros","nome":"Parabrisa","opcoes":[],"q":"parabrisa"},{"id":"v02","grupo":"vidros","nome":"Vidro traseiro","opcoes":[],"q":"vidro traseiro"},{"id":"v03","grupo":"vidros","nome":"Vidro de porta","opcoes":[],"q":"vidro porta"},{"id":"s01","grupo":"seguranca","nome":"Airbag do volante","dica":"Airbag estourado nao se resolve no Mercado Livre. E peca de seguranca: oficina com peca nova mais a reprogramacao do modulo. Poe aqui o orcamento da oficina.","semML":true},{"id":"s02","grupo":"seguranca","nome":"Airbag do passageiro","dica":"Mesma coisa do volante: orcamento de oficina, nao anuncio de internet.","semML":true},{"id":"s03","grupo":"seguranca","nome":"Modulo do airbag","dica":"Depois que o airbag dispara, o modulo grava o evento e trava. Sem reprogramar, a luz nao apaga e o carro nao passa em vistoria.","semML":true},{"id":"s04","grupo":"seguranca","nome":"Cinto de seguranca","dica":"Cinto que travou no impacto tambem e item de seguranca. Troca em oficina.","semML":true},{"id":"r01","grupo":"rodas","nome":"Roda","opcoes":[],"q":"roda"},{"id":"r02","grupo":"rodas","nome":"Pneu","opcoes":[],"q":"pneu"},{"id":"r03","grupo":"rodas","nome":"Amortecedor","opcoes":[],"q":"amortecedor"},{"id":"r04","grupo":"rodas","nome":"Bandeja da suspensao","opcoes":[],"q":"bandeja suspensao"},{"id":"r05","grupo":"rodas","nome":"Ponta de eixo","opcoes":[],"q":"ponta de eixo"},{"id":"r06","grupo":"rodas","nome":"Cubo de roda","opcoes":[],"q":"cubo de roda"},{"id":"i01","grupo":"interior","nome":"Painel","opcoes":[],"q":"painel"},{"id":"i02","grupo":"interior","nome":"Forro de porta","opcoes":[],"q":"forro de porta"},{"id":"i03","grupo":"interior","nome":"Banco","opcoes":[],"q":"banco"}]}]};
+var CATALOGO = {"conferido_em":"","picapes":[{"marca":"Ford","modelo":"F-250","slug":"ford-f250","anos":[],"pecas":[{"id":"f01","grupo":"frente","nome":"Parachoque dianteiro","opcoes":[],"q":"parachoque dianteiro","termos":["parachoque","dianteiro"]},{"id":"f02","grupo":"frente","nome":"Capo","opcoes":[],"q":"capo","termos":["capo"]},{"id":"f03","grupo":"frente","nome":"Grade dianteira","opcoes":[],"q":"grade dianteira","termos":["grade"]},{"id":"f04","grupo":"frente","nome":"Farol direito","opcoes":[],"q":"farol direito","termos":["farol","direito"],"excluir":["milha","neblina","auxiliar"]},{"id":"f05","grupo":"frente","nome":"Farol esquerdo","opcoes":[],"q":"farol esquerdo","termos":["farol","esquerdo"],"excluir":["milha","neblina","auxiliar"]},{"id":"f06","grupo":"frente","nome":"Farol de milha ou neblina","opcoes":[],"q":"farol de milha","termos":["farol","milha"]},{"id":"f07","grupo":"frente","nome":"Paralama dianteiro direito","opcoes":[],"q":"paralama dianteiro direito","termos":["paralama","dianteiro","direito"]},{"id":"f08","grupo":"frente","nome":"Paralama dianteiro esquerdo","opcoes":[],"q":"paralama dianteiro esquerdo","termos":["paralama","dianteiro","esquerdo"]},{"id":"f09","grupo":"frente","nome":"Radiador","opcoes":[],"q":"radiador","termos":["radiador"]},{"id":"f10","grupo":"frente","nome":"Condensador do ar","opcoes":[],"q":"condensador ar condicionado","termos":["condensador"]},{"id":"f11","grupo":"frente","nome":"Eletroventilador","opcoes":[],"q":"eletroventilador","termos":["eletroventilador"]},{"id":"f12","grupo":"frente","nome":"Painel frontal (travessa)","dica":"E a estrutura atras do parachoque. Se ela amassou, o servico e de funilaria, nao so troca de peca.","opcoes":[],"q":"painel frontal","termos":["painel","frontal"],"excluir":["instrumento","interno"]},{"id":"t01","grupo":"traseira","nome":"Parachoque traseiro","opcoes":[],"q":"parachoque traseiro","termos":["parachoque","traseiro"]},{"id":"t02","grupo":"traseira","nome":"Tampa do porta-malas","opcoes":[],"q":"tampa porta malas","termos":["tampa"]},{"id":"t03","grupo":"traseira","nome":"Lanterna direita","opcoes":[],"q":"lanterna traseira direita","termos":["lanterna","direita"]},{"id":"t04","grupo":"traseira","nome":"Lanterna esquerda","opcoes":[],"q":"lanterna traseira esquerda","termos":["lanterna","esquerda"]},{"id":"t05","grupo":"traseira","nome":"Painel traseiro","dica":"Painel traseiro amassado costuma vir junto com assoalho torto. Olhe o vao da tampa nas fotos.","opcoes":[],"q":"painel traseiro","termos":["painel","traseiro"],"excluir":["instrumento","interno"]},{"id":"t06","grupo":"traseira","nome":"Paralama traseiro direito","opcoes":[],"q":"paralama traseiro direito","termos":["paralama","traseiro","direito"]},{"id":"t07","grupo":"traseira","nome":"Paralama traseiro esquerdo","opcoes":[],"q":"paralama traseiro esquerdo","termos":["paralama","traseiro","esquerdo"]},{"id":"l01","grupo":"lateral","nome":"Porta dianteira direita","opcoes":[],"q":"porta dianteira direita","termos":["porta","dianteira","direita"]},{"id":"l02","grupo":"lateral","nome":"Porta dianteira esquerda","opcoes":[],"q":"porta dianteira esquerda","termos":["porta","dianteira","esquerda"]},{"id":"l03","grupo":"lateral","nome":"Porta traseira direita","opcoes":[],"q":"porta traseira direita","termos":["porta","traseira","direita"]},{"id":"l04","grupo":"lateral","nome":"Porta traseira esquerda","opcoes":[],"q":"porta traseira esquerda","termos":["porta","traseira","esquerda"]},{"id":"l05","grupo":"lateral","nome":"Retrovisor direito","opcoes":[],"q":"retrovisor direito","termos":["retrovisor","direito"],"excluir":["interno","interna"]},{"id":"l06","grupo":"lateral","nome":"Retrovisor esquerdo","opcoes":[],"q":"retrovisor esquerdo","termos":["retrovisor","esquerdo"],"excluir":["interno","interna"]},{"id":"l07","grupo":"lateral","nome":"Soleira","opcoes":[],"q":"soleira","termos":["soleira"]},{"id":"l08","grupo":"lateral","nome":"Caixa de ar","opcoes":[],"q":"caixa de ar","termos":["caixa"]},{"id":"v01","grupo":"vidros","nome":"Parabrisa","opcoes":[],"q":"parabrisa","termos":["parabrisa"],"excluir":["palheta","limpador"]},{"id":"v02","grupo":"vidros","nome":"Vidro traseiro","opcoes":[],"q":"vidro traseiro","termos":["vidro","traseiro"],"excluir":["palheta","limpador"]},{"id":"v03","grupo":"vidros","nome":"Vidro de porta","opcoes":[],"q":"vidro porta","termos":["vidro","porta"]},{"id":"s01","grupo":"seguranca","nome":"Airbag do volante","dica":"Airbag estourado nao se resolve no Mercado Livre. E peca de seguranca: oficina com peca nova mais a reprogramacao do modulo. Poe aqui o orcamento da oficina.","semML":true},{"id":"s02","grupo":"seguranca","nome":"Airbag do passageiro","dica":"Mesma coisa do volante: orcamento de oficina, nao anuncio de internet.","semML":true},{"id":"s03","grupo":"seguranca","nome":"Modulo do airbag","dica":"Depois que o airbag dispara, o modulo grava o evento e trava. Sem reprogramar, a luz nao apaga e o carro nao passa em vistoria.","semML":true},{"id":"s04","grupo":"seguranca","nome":"Cinto de seguranca","dica":"Cinto que travou no impacto tambem e item de seguranca. Troca em oficina.","semML":true},{"id":"r01","grupo":"rodas","nome":"Roda","opcoes":[],"q":"roda","termos":["roda"],"excluir":["calota"]},{"id":"r02","grupo":"rodas","nome":"Pneu","opcoes":[],"q":"pneu","termos":["pneu"]},{"id":"r03","grupo":"rodas","nome":"Amortecedor","opcoes":[],"q":"amortecedor","termos":["amortecedor"]},{"id":"r04","grupo":"rodas","nome":"Bandeja da suspensao","opcoes":[],"q":"bandeja suspensao","termos":["bandeja"]},{"id":"r05","grupo":"rodas","nome":"Ponta de eixo","opcoes":[],"q":"ponta de eixo","termos":["ponta","eixo"]},{"id":"r06","grupo":"rodas","nome":"Cubo de roda","opcoes":[],"q":"cubo de roda","termos":["cubo","roda"]},{"id":"i01","grupo":"interior","nome":"Painel","opcoes":[],"q":"painel","termos":["painel"],"excluir":["frontal","traseiro","traseira"]},{"id":"i02","grupo":"interior","nome":"Forro de porta","opcoes":[],"q":"forro de porta","termos":["forro","porta"]},{"id":"i03","grupo":"interior","nome":"Banco","opcoes":[],"q":"banco","termos":["banco"]}]}]};
 /* ============================================================
    CATALOGO:FIM
    ============================================================ */
@@ -254,6 +274,9 @@ var SEL = { marca:'', modelo:'', ano:'' };
 var MARCADAS = {};
 var LOTE = null;      /* ?pecas= vindo do portal */
 var REGIAO = 'frente';
+var PESQ = null;      /* {id: {estado, preco, titulo, link, erro}} da ultima pesquisa */
+var AUTO = false;     /* ?auto=1 com ?pecas= dispara a pesquisa sozinha (portal) */
+var RODANDO = false;
 
 var LS = 'picape-v1';
 function lsGravar(){
@@ -279,9 +302,9 @@ function picapeAtual(){
 function avisoAfiliado(){
   return '<div class="aviso-af">' +
     '<b>Publicidade: esta página tem links de afiliado</b>' +
-    '<p>Os botões de PRODUTO indicado são links de afiliado do Mercado Livre. Comprando por eles, ' +
-    'a gente recebe uma comissão, <em>sem nenhum custo a mais pra você</em>. Os links de BUSCA ' +
-    'não têm afiliado nenhum.</p>' +
+    '<p>Os botões que levam a um anúncio são links de afiliado do Mercado Livre. Comprando por eles, ' +
+    'a gente recebe uma comissão, <em>sem nenhum custo a mais pra você</em>: o preço é o mesmo ' +
+    'que você pagaria entrando direto. Os links de busca não têm afiliado nenhum.</p>' +
     '</div>';
 }
 
@@ -345,8 +368,9 @@ function blocoMarcar(pic){
     '<div class="lista">' + linhas + '</div>' +
     '<div class="montar"><button type="button" class="btn btn-1" id="btnMontar"' +
     (total ? '' : ' disabled style="opacity:.45;cursor:default"') + '>' +
-    (total ? 'Montar a pesquisa das ' + total + (total === 1 ? ' peça' : ' peças')
-           : 'Marque as peças pra montar a pesquisa') +
+    (total ? (CFG.MOTOR_URL ? (RODANDO ? 'Pesquisando...' : 'Pesquisar ' + (total === 1 ? 'a peça' : 'as ' + total + ' peças'))
+                            : 'Montar a pesquisa das ' + total + (total === 1 ? ' peça' : ' peças'))
+           : 'Marque as peças pra ' + (CFG.MOTOR_URL ? 'pesquisar' : 'montar a pesquisa')) +
     '</button></div>';
 }
 
@@ -365,6 +389,52 @@ function linhaPlanilha(p){
   return h + '</div>';
 }
 
+function brl(v){
+  try { return v.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}); }
+  catch(e){ return 'R$ ' + v.toFixed(2).replace('.', ','); }
+}
+
+function linhaMotor(p){
+  var h = '<div class="pl"><span class="nm">' + esc(p.nome) + '</span>';
+  if (p.semML){
+    return h + '<span class="ofc">orçamento de oficina, não se compra em anúncio</span></div>';
+  }
+  var r = (PESQ && PESQ[p.id]) || {estado: 'pesquisando'};
+  if (r.estado === 'pesquisando'){
+    return h + '<span class="esp">pesquisando...</span></div>';
+  }
+  if (r.estado === 'ok'){
+    return h + '<span class="preco">' + esc(brl(r.preco)) + '</span>' +
+      '<span class="comprar"><a class="btn btn-1" href="' + esc(r.link) + '" target="_blank" ' +
+      'rel="sponsored noopener">Ver o anúncio</a></span>' +
+      '<span class="tit">' + esc(r.titulo) + '</span></div>';
+  }
+  var msg = r.erro === 'limite_diario' ? 'pesquisa ao vivo pausada por hoje'
+          : r.erro === 'sem_anuncio_confiavel' ? 'não achamos um anúncio confiável'
+          : 'a pesquisa não respondeu';
+  return h + '<span class="falha">' + esc(msg) + '</span>' +
+    '<a class="pl-ir" href="' + esc(urlGarimpo(p)) + '" target="_blank" rel="noopener">procurar você mesmo</a></div>';
+}
+
+function blocoTotalPesq(ms){
+  var t = 0, com = 0, compraveis = 0, pend = 0;
+  ms.forEach(function(p){
+    if (p.semML) return;
+    compraveis++;
+    var r = PESQ && PESQ[p.id];
+    if (!r || r.estado === 'pesquisando'){ pend++; return; }
+    if (r.estado === 'ok'){ t += r.preco; com++; }
+  });
+  return '<div class="total-pesq" id="totalPesq">' +
+    '<div class="rot micro">Quanto as peças vão custar</div>' +
+    '<div class="num">' + esc(brl(t)) + '</div>' +
+    '<div class="sub">' + com + ' de ' + compraveis + (compraveis === 1 ? ' peça' : ' peças') + ' com preço' +
+    (pend ? ', ' + pend + ' ainda pesquisando' : '') +
+    (ms.some(function(p){ return p.semML; }) ? '. Peças de segurança ficam fora: são orçamento de oficina' : '') +
+    '. Preço do momento da pesquisa, achado no Google Shopping: confira no anúncio antes de pagar.</div>' +
+    '</div>';
+}
+
 function blocoPesquisa(pic){
   var ms = [];
   GRUPOS.forEach(function(g){
@@ -374,6 +444,21 @@ function blocoPesquisa(pic){
   });
   if (!ms.length) return '';
   var carro = [SEL.marca, SEL.modelo, SEL.ano].filter(function(x){ return String(x || '').trim(); }).join(' ');
+  if (CFG.MOTOR_URL){
+    if (!PESQ) return '';
+    var temLink = ms.some(function(p){ var r = PESQ[p.id]; return r && r.estado === 'ok'; });
+    return '<div class="pesq" id="pesquisa">' +
+      (temLink ? avisoAfiliado() : '') +
+      '<div class="pesq-cab" style="margin-top:18px"><h2>A pesquisa' + (carro ? ': ' + esc(carro) : '') + '</h2>' +
+      '<span class="sub">' + ms.length + (ms.length === 1 ? ' peça' : ' peças') + '</span></div>' +
+      '<div class="plan">' + ms.map(linhaMotor).join('') + '</div>' +
+      blocoTotalPesq(ms) +
+      '<div class="acoes-plan">' +
+      '<button type="button" class="btn btn-2" id="btnCopiar">Copiar a lista</button>' +
+      '<button type="button" class="btn btn-2" id="btnBaixar">Baixar a planilha</button>' +
+      '</div><div class="copiado" id="avisoCopiado">Lista copiada. É só colar onde quiser.</div>' +
+      '</div>';
+  }
   return '<div class="pesq" id="pesquisa">' +
     '<div class="pesq-cab"><h2>A pesquisa pronta' + (carro ? ': ' + esc(carro) : '') + '</h2>' +
     '<span class="sub">' + ms.length + (ms.length === 1 ? ' peça' : ' peças') + '</span></div>' +
@@ -416,7 +501,10 @@ function linhasExport(){
   GRUPOS.forEach(function(g){
     pic.pecas.forEach(function(p){
       if (p.grupo !== g.id || !MARCADAS[p.id]) return;
-      out.push({nome: p.nome, link: p.semML ? 'orcamento de oficina' : urlGarimpo(p)});
+      var r = PESQ && PESQ[p.id];
+      if (p.semML) out.push({nome: p.nome, preco: '', link: 'orcamento de oficina'});
+      else if (r && r.estado === 'ok') out.push({nome: p.nome, preco: brl(r.preco), link: r.link});
+      else out.push({nome: p.nome, preco: '', link: urlGarimpo(p)});
     });
   });
   return out;
@@ -425,7 +513,7 @@ function linhasExport(){
 function copiarLista(){
   var ls = linhasExport();
   if (!ls.length) return;
-  var txt = ls.map(function(l){ return l.nome + ': ' + l.link; }).join('\n');
+  var txt = ls.map(function(l){ return l.nome + (l.preco ? ' (' + l.preco + ')' : '') + ': ' + l.link; }).join('\n');
   function feito(){
     var n = $('avisoCopiado');
     if (n) n.className = 'copiado on';
@@ -447,14 +535,87 @@ function baixarPlanilha(){
   var carro = [SEL.marca, SEL.modelo, SEL.ano].filter(function(x){ return String(x || '').trim(); }).join(' ');
   /* CSV com ; e BOM: abre direto no Excel e no Numbers com acento certo.
      O download acontece SO neste clique da pessoa. */
-  var csv = '﻿Peca;Busca no Mercado Livre\n' + ls.map(function(l){
-    return '"' + l.nome.replace(/"/g, '""') + '";"' + l.link + '"';
+  var csv = '\ufeffPeca;Preco;Link\n' + ls.map(function(l){
+    return '"' + l.nome.replace(/"/g, '""') + '";"' + (l.preco || '') + '";"' + l.link + '"';
   }).join('\n');
   var blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'pesquisa-pecas-' + (slugBusca(carro) || 'carro') + '.csv';
   document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- a pesquisa no motor ---------- */
+function pecasParaPesquisar(){
+  var pic = picapeAtual();
+  if (!pic) return [];
+  return pic.pecas.filter(function(p){ return MARCADAS[p.id] && !p.semML; });
+}
+
+function pedirLote(lote){
+  var pay = {c: {marca: SEL.marca, modelo: SEL.modelo, ano: SEL.ano},
+             p: lote.map(function(p){ return {id: p.id, nome: p.nome, q: p.q, termos: p.termos || [], excluir: p.excluir || []}; })};
+  var url = CFG.MOTOR_URL + '?d=' + encodeURIComponent(JSON.stringify(pay));
+  return fetch(url, {cache: 'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    (d.linhas || []).forEach(function(l){
+      PESQ[l.id] = l.erro ? {estado: 'erro', erro: l.erro}
+                          : {estado: 'ok', preco: l.preco, titulo: l.titulo, link: l.link};
+    });
+    lote.forEach(function(p){
+      if (!PESQ[p.id] || PESQ[p.id].estado === 'pesquisando'){
+        PESQ[p.id] = {estado: 'erro', erro: d.erro || 'busca_falhou'};
+      }
+    });
+  }).catch(function(){
+    lote.forEach(function(p){ PESQ[p.id] = {estado: 'erro', erro: 'busca_falhou'}; });
+  }).then(function(){ redesenharPesquisa(); });
+}
+
+function emLotes(lista){
+  var out = [];
+  for (var i = 0; i < lista.length; i += CFG.LOTE) out.push(lista.slice(i, i + CFG.LOTE));
+  return out;
+}
+
+function iniciarPesquisa(){
+  var ps = pecasParaPesquisar();
+  if (RODANDO) return;
+  PESQ = {};
+  ps.forEach(function(p){ PESQ[p.id] = {estado: 'pesquisando'}; });
+  RODANDO = true;
+  soResultado();
+  var alvo = $('pesquisa');
+  if (alvo) alvo.scrollIntoView({behavior: 'smooth', block: 'start'});
+  if (!ps.length){ RODANDO = false; soResultado(); return; }
+  Promise.all(emLotes(ps).map(pedirLote)).then(function(){
+    /* o SerpApi termina a busca mesmo quando a gente desiste e guarda por 1h:
+       a 2a tentativa costuma vir na hora e sem custo */
+    var falhas = ps.filter(function(p){ return PESQ[p.id] && PESQ[p.id].erro === 'busca_falhou'; });
+    if (!falhas.length) return;
+    falhas.forEach(function(p){ PESQ[p.id] = {estado: 'pesquisando'}; });
+    redesenharPesquisa();
+    return new Promise(function(ok){ setTimeout(ok, 6000); })
+      .then(function(){ return Promise.all(emLotes(falhas).map(pedirLote)); });
+  }).then(function(){ RODANDO = false; soResultado(); });
+}
+
+function redesenharPesquisa(){
+  var pic = picapeAtual();
+  var n = $('pesquisa');
+  if (!pic || !n) return;
+  var novo = blocoPesquisa(pic);
+  if (!novo) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = novo;
+  n.parentNode.replaceChild(tmp.firstChild, n);
+  ligarExport();
+}
+
+function ligarExport(){
+  var bc = $('btnCopiar');
+  if (bc) bc.onclick = copiarLista;
+  var bb = $('btnBaixar');
+  if (bb) bb.onclick = baixarPlanilha;
 }
 
 /* ---------- montagem ---------- */
@@ -479,11 +640,11 @@ function render(){
 function ligar(){
   var m = $('selMarca'), mo = $('selModelo'), a = $('selAno');
   if (m) m.onchange = function(){
-    SEL.marca = this.value; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null;
+    SEL.marca = this.value; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
     lsGravar(); montar();
   };
   if (mo) mo.onchange = function(){
-    SEL.modelo = this.value; SEL.ano = ''; MARCADAS = {}; LOTE = null;
+    SEL.modelo = this.value; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
     lsGravar(); montar();
   };
   if (a) a.onchange = function(){
@@ -501,18 +662,17 @@ function ligarResultado(){
   for (var j = 0; j < caixas.length; j++){
     caixas[j].onchange = function(){
       MARCADAS[this.getAttribute('data-peca')] = this.checked;
+      if (!RODANDO) PESQ = null;
       lsGravar(); soResultado();
     };
   }
   var bm = $('btnMontar');
   if (bm) bm.onclick = function(){
+    if (CFG.MOTOR_URL){ iniciarPesquisa(); return; }
     var p = $('pesquisa');
     if (p) p.scrollIntoView({behavior: 'smooth', block: 'start'});
   };
-  var bc = $('btnCopiar');
-  if (bc) bc.onclick = copiarLista;
-  var bb = $('btnBaixar');
-  if (bb) bb.onclick = baixarPlanilha;
+  ligarExport();
 }
 
 /* deep-link: ?marca=&modelo=&ano=&pecas=f01,t03 (o portal manda o lote).
@@ -530,6 +690,11 @@ function lerParametros(){
         }
       }
     });
+    /* ?motor= so aceita endereco LOCAL: serve pra testar o worker na maquina
+       sem publicar. Endereco externo e ignorado (ninguem injeta outro motor). */
+    var mt = q.get('motor') || '';
+    if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(mt)) CFG.MOTOR_URL = mt;
+    AUTO = q.get('auto') === '1';
     var ps = q.get('pecas') || '';
     if (ps && SEL.marca){
       var ids = {};
@@ -552,8 +717,10 @@ lsCarregar();
 if (SEL.marca && !picapeAtual()){ SEL = { marca:'', modelo:'', ano:'' }; }
 lerParametros();
 render();
-if (LOTE){
-  /* veio do portal com o lote marcado: ja desce pra pesquisa pronta */
+if (LOTE && CFG.MOTOR_URL && AUTO){
+  /* veio do portal com o lote marcado e o pedido de pesquisar: pesquisa ja */
+  iniciarPesquisa();
+} else if (LOTE){
   var alvo = $('pesquisa');
   if (alvo) alvo.scrollIntoView();
 }
