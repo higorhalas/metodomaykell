@@ -146,10 +146,26 @@ select:disabled{opacity:.45}
 .pl .esp{flex:0 0 auto;color:var(--ink-5);font-size:12.5px}
 .pl .falha{flex:0 0 auto;color:var(--alerta-hi);font-size:12.5px}
 .pl .comprar .btn{padding:9px 14px;font-size:12.5px}
+.busca-viva{margin-top:16px;padding:16px 18px;border-radius:14px;
+  border:1px solid rgba(232,200,106,.3);background:rgba(232,200,106,.05)}
+.bv-barra{height:4px;border-radius:99px;background:rgba(248,246,240,.08);overflow:hidden}
+.bv-barra span{display:block;height:100%;border-radius:99px;transition:width .5s ease;
+  background:linear-gradient(90deg,var(--accent),var(--accent-hi),var(--accent));
+  background-size:200% 100%;animation:brilho 1.6s linear infinite}
+.bv-frase{margin-top:12px;color:var(--ink-1);font-size:14.5px;font-weight:600;
+  letter-spacing:-.02em;min-height:1.6em;transition:opacity .35s ease}
+.bv-frase.sai{opacity:0}
+.bv-cont{margin-top:3px;color:var(--ink-4);font-size:12.5px}
+.pulso{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);
+  margin-right:8px;vertical-align:middle;animation:pulso 1.1s ease-in-out infinite}
+@keyframes pulso{0%,100%{opacity:.25;transform:scale(.75)}50%{opacity:1;transform:scale(1)}}
+@keyframes brilho{from{background-position:200% 0}to{background-position:0 0}}
+@media (prefers-reduced-motion: reduce){.pulso,.bv-barra span{animation:none}.bv-frase{transition:none}}
 .total-pesq{margin-top:16px;padding:20px;border-radius:16px;
   border:1px solid rgba(232,200,106,.3);background:rgba(232,200,106,.06)}
 .total-pesq .rot{color:var(--accent);margin-bottom:6px}
 .total-pesq .num{color:var(--ink-1);font-family:var(--mono);font-size:clamp(24px,5.4vw,32px);font-weight:700}
+.total-pesq .num.calc{color:var(--ink-4);font-family:var(--font);font-size:18px;font-weight:600}
 .total-pesq .sub{color:var(--ink-4);font-size:13px;margin-top:6px;line-height:1.6}
 .copiado{color:var(--ok-hi);font-size:13px;margin-top:8px;display:none}
 .copiado.on{display:block}
@@ -176,7 +192,7 @@ footer b{color:var(--ink-4)}
   <header>
     <div class="selo micro">Maykell Gomes · 12 anos de leilão</div>
     <h1>A pesquisa de peças, <span>pronta</span></h1>
-    <p>Escolha o carro, marque as peças que ele precisa e aperte o botão. Sai a lista com a busca certa do Mercado Livre pra cada peça.</p>
+    <p>Escolha o carro, marque as peças que ele precisa e aperte Pesquisar. A gente procura cada peça no Mercado Livre e devolve o preço, o link do anúncio e o total.</p>
   </header>
 
   <div id="corpo"></div>
@@ -276,6 +292,9 @@ var LOTE = null;      /* ?pecas= vindo do portal */
 var REGIAO = 'frente';
 var PESQ = null;      /* {id: {estado, preco, titulo, link, erro}} da ultima pesquisa */
 var AUTO = false;     /* ?auto=1 com ?pecas= dispara a pesquisa sozinha (portal) */
+var FRASE = '';       /* frase da busca viva na tela agora */
+var FRASE_I = 0;
+var FRASE_TIMER = null;
 var RODANDO = false;
 
 var LS = 'picape-v1';
@@ -401,7 +420,7 @@ function linhaMotor(p){
   }
   var r = (PESQ && PESQ[p.id]) || {estado: 'pesquisando'};
   if (r.estado === 'pesquisando'){
-    return h + '<span class="esp">pesquisando...</span></div>';
+    return h + '<span class="esp"><i class="pulso"></i>pesquisando</span></div>';
   }
   if (r.estado === 'ok'){
     return h + '<span class="preco">' + esc(brl(r.preco)) + '</span>' +
@@ -416,6 +435,71 @@ function linhaMotor(p){
     '<a class="pl-ir" href="' + esc(urlGarimpo(p)) + '" target="_blank" rel="noopener">procurar você mesmo</a></div>';
 }
 
+/* ---------- a busca viva: frases trocando enquanto o motor trabalha ----------
+   As frases descrevem o que o motor faz DE VERDADE (curadoria em logica.js)
+   e usam o nome das pecas que ainda estao sendo buscadas. Sem rotulo
+   comparativo de preco (regra 5.3 do programa de afiliados). */
+function frasesBusca(){
+  var carro = [SEL.marca, SEL.modelo].filter(function(x){ return String(x || '').trim(); }).join(' ');
+  var pend = pecasParaPesquisar().filter(function(p){
+    return PESQ && PESQ[p.id] && PESQ[p.id].estado === 'pesquisando';
+  });
+  var gerais = ['Comparando ofertas de vendedores diferentes',
+                'Descartando acessório, peça usada e anúncio de outro modelo',
+                'Conferindo o preço cheio de cada anúncio, não a parcela',
+                'Somando quanto o carro vai custar'];
+  var out = [];
+  for (var i = 0; i < Math.max(pend.length, gerais.length); i++){
+    if (pend[i]) out.push('Procurando ' + pend[i].nome.toLowerCase() + ' pra ' + carro + ' no Mercado Livre');
+    if (gerais[i]) out.push(gerais[i]);
+  }
+  return out.length ? out : gerais;
+}
+
+function blocoBuscaViva(ms){
+  if (!RODANDO) return '';
+  var tot = 0, prontas = 0;
+  ms.forEach(function(p){
+    if (p.semML) return;
+    tot++;
+    var r = PESQ && PESQ[p.id];
+    if (r && r.estado !== 'pesquisando') prontas++;
+  });
+  var pct = tot ? Math.max(6, Math.round(100 * prontas / tot)) : 6;
+  if (!FRASE) FRASE = frasesBusca()[0];
+  return '<div class="busca-viva" id="buscaViva" aria-live="polite">' +
+    '<div class="bv-barra"><span style="width:' + pct + '%"></span></div>' +
+    '<div class="bv-frase" id="bvFrase">' + esc(FRASE) + '</div>' +
+    '<div class="bv-cont">' + prontas + ' de ' + tot + (tot === 1 ? ' peça pronta' : ' peças prontas') + '</div>' +
+    '</div>';
+}
+
+function trocarFrase(){
+  var el = $('bvFrase');
+  var fs = frasesBusca();
+  FRASE_I = (FRASE_I + 1) % fs.length;
+  var nova = fs[FRASE_I];
+  if (!el){ FRASE = nova; return; }
+  el.className = 'bv-frase sai';
+  setTimeout(function(){
+    FRASE = nova;
+    var e2 = $('bvFrase');
+    if (e2){ e2.textContent = nova; e2.className = 'bv-frase'; }
+  }, 350);
+}
+
+function ligarBuscaViva(){
+  pararBuscaViva();
+  FRASE_I = 0;
+  FRASE = frasesBusca()[0];
+  FRASE_TIMER = setInterval(trocarFrase, 2000);
+}
+
+function pararBuscaViva(){
+  if (FRASE_TIMER){ clearInterval(FRASE_TIMER); FRASE_TIMER = null; }
+  FRASE = '';
+}
+
 function blocoTotalPesq(ms){
   var t = 0, com = 0, compraveis = 0, pend = 0;
   ms.forEach(function(p){
@@ -427,7 +511,8 @@ function blocoTotalPesq(ms){
   });
   return '<div class="total-pesq" id="totalPesq">' +
     '<div class="rot micro">Quanto as peças vão custar</div>' +
-    '<div class="num">' + esc(brl(t)) + '</div>' +
+    (pend && !com ? '<div class="num calc"><i class="pulso"></i>calculando...</div>'
+                  : '<div class="num">' + esc(brl(t)) + '</div>') +
     '<div class="sub">' + com + ' de ' + compraveis + (compraveis === 1 ? ' peça' : ' peças') + ' com preço' +
     (pend ? ', ' + pend + ' ainda pesquisando' : '') +
     (ms.some(function(p){ return p.semML; }) ? '. Peças de segurança ficam fora: são orçamento de oficina' : '') +
@@ -451,6 +536,7 @@ function blocoPesquisa(pic){
       (temLink ? avisoAfiliado() : '') +
       '<div class="pesq-cab" style="margin-top:18px"><h2>A pesquisa' + (carro ? ': ' + esc(carro) : '') + '</h2>' +
       '<span class="sub">' + ms.length + (ms.length === 1 ? ' peça' : ' peças') + '</span></div>' +
+      blocoBuscaViva(ms) +
       '<div class="plan">' + ms.map(linhaMotor).join('') + '</div>' +
       blocoTotalPesq(ms) +
       '<div class="acoes-plan">' +
@@ -583,10 +669,11 @@ function iniciarPesquisa(){
   PESQ = {};
   ps.forEach(function(p){ PESQ[p.id] = {estado: 'pesquisando'}; });
   RODANDO = true;
+  ligarBuscaViva();
   soResultado();
   var alvo = $('pesquisa');
   if (alvo) alvo.scrollIntoView({behavior: 'smooth', block: 'start'});
-  if (!ps.length){ RODANDO = false; soResultado(); return; }
+  if (!ps.length){ RODANDO = false; pararBuscaViva(); soResultado(); return; }
   Promise.all(emLotes(ps).map(pedirLote)).then(function(){
     /* o SerpApi termina a busca mesmo quando a gente desiste e guarda por 1h:
        a 2a tentativa costuma vir na hora e sem custo */
@@ -596,7 +683,7 @@ function iniciarPesquisa(){
     redesenharPesquisa();
     return new Promise(function(ok){ setTimeout(ok, 6000); })
       .then(function(){ return Promise.all(emLotes(falhas).map(pedirLote)); });
-  }).then(function(){ RODANDO = false; soResultado(); });
+  }).then(function(){ RODANDO = false; pararBuscaViva(); soResultado(); });
 }
 
 function redesenharPesquisa(){
