@@ -6,8 +6,13 @@
 <title>Método Maykell</title>
 <!-- A raiz so encaminha. O endereco fixo do Verificador e /verificador/, que e o
      que vai nos anuncios: assim a raiz pode virar outra pagina no futuro sem
-     quebrar link de campanha que ja esta rodando. -->
-<meta http-equiv="refresh" content="0; url=/verificador/">
+     quebrar link de campanha que ja esta rodando.
+     12/10/2026: o encaminhamento preserva ?query e #hash, porque a raiz e a
+     URL de retorno OAuth do app da API (buscadorpecas) e o ?code= chegava
+     aqui e era descartado pelo meta refresh. JS preserva; o noscript cobre
+     navegador sem JS (ai o code se perde, mas o visitante chega). -->
+<script>location.replace('/verificador/' + location.search + location.hash);</script>
+<noscript><meta http-equiv="refresh" content="0; url=/verificador/"></noscript>
 <link rel="canonical" href="https://metodomaykell.com.br/verificador/">
 <style>body{font-family:system-ui,sans-serif;background:#0b0f1a;color:#e8ecf3;display:grid;place-items:center;min-height:100vh;margin:0}a{color:#7dd3fc}</style>
 </head>
