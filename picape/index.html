@@ -89,13 +89,24 @@ header p{margin:13px auto 0;color:var(--ink-4);font-size:15px;max-width:46ch}
 .sel-grade{display:grid;gap:10px;grid-template-columns:1fr}
 @media(min-width:560px){.sel-grade{grid-template-columns:1fr 1fr 1fr}}
 .campo label{display:block;color:var(--ink-4);font-size:12.5px;margin-bottom:6px}
-select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
-  background:var(--surface);color:var(--ink-1);font-family:var(--font);font-size:15.5px;
-  letter-spacing:-.02em;appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2388826F' stroke-width='1.6' fill='none'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center}
-select:focus{outline:none;border-color:rgba(232,200,106,.45)}
-select:disabled{opacity:.45}
+/* campo com lista + busca (marca, modelo, ano) */
+.combo{position:relative}
+.cb-caixa{position:relative}
+.cb-caixa input{width:100%;padding:13px 42px 13px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-1);font-family:var(--font);font-size:15.5px;letter-spacing:-.02em}
+.cb-caixa input:focus{outline:none;border-color:rgba(232,200,106,.45)}
+.cb-caixa input:disabled{opacity:.45;cursor:not-allowed}
+.cb-caixa input::placeholder{color:var(--ink-5)}
+.cb-seta{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+  border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cb-seta:disabled{cursor:not-allowed;opacity:.45}
+.cb-seta svg{width:12px;height:7px}
+.cb-lista{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:20;max-height:290px;overflow-y:auto;
+  margin:0;padding:6px;list-style:none;border-radius:12px;border:1px solid var(--line-2);
+  background:var(--surface-2);box-shadow:0 18px 40px rgba(0,0,0,.55);-webkit-overflow-scrolling:touch}
+.cb-lista li{padding:10px 12px;border-radius:8px;color:var(--ink-2);font-size:14.5px;cursor:pointer}
+.cb-lista li.ativo,.cb-lista li:hover{background:rgba(232,200,106,.1);color:var(--ink-1)}
+.cb-lista li.vazio{color:var(--ink-5);cursor:default;background:none}
 .convite{margin-top:20px;padding:22px;border-radius:16px;border:1px dashed var(--line-2);
   text-align:center;color:var(--ink-4);font-size:14.5px}
 
@@ -221,7 +232,8 @@ var CFG = {
    Gerado por gerar_base.py a partir de pecas.json.
    NAO EDITAR A MAO. Mexeu no json? roda: python3 gerar_base.py
    ============================================================ */
-var CATALOGO = {"conferido_em":"","picapes":[{"marca":"Ford","modelo":"F-250","slug":"ford-f250","anos":[],"pecas":[{"id":"f01","grupo":"frente","nome":"Parachoque dianteiro","opcoes":[],"q":"parachoque dianteiro","termos":["parachoque","dianteiro"]},{"id":"f02","grupo":"frente","nome":"Capo","opcoes":[],"q":"capo","termos":["capo"]},{"id":"f03","grupo":"frente","nome":"Grade dianteira","opcoes":[],"q":"grade dianteira","termos":["grade"]},{"id":"f04","grupo":"frente","nome":"Farol direito","opcoes":[],"q":"farol direito","termos":["farol","direito"],"excluir":["milha","neblina","auxiliar"]},{"id":"f05","grupo":"frente","nome":"Farol esquerdo","opcoes":[],"q":"farol esquerdo","termos":["farol","esquerdo"],"excluir":["milha","neblina","auxiliar"]},{"id":"f06","grupo":"frente","nome":"Farol de milha ou neblina","opcoes":[],"q":"farol de milha","termos":["farol","milha"]},{"id":"f07","grupo":"frente","nome":"Paralama dianteiro direito","opcoes":[],"q":"paralama dianteiro direito","termos":["paralama","dianteiro","direito"]},{"id":"f08","grupo":"frente","nome":"Paralama dianteiro esquerdo","opcoes":[],"q":"paralama dianteiro esquerdo","termos":["paralama","dianteiro","esquerdo"]},{"id":"f09","grupo":"frente","nome":"Radiador","opcoes":[],"q":"radiador","termos":["radiador"]},{"id":"f10","grupo":"frente","nome":"Condensador do ar","opcoes":[],"q":"condensador ar condicionado","termos":["condensador"]},{"id":"f11","grupo":"frente","nome":"Eletroventilador","opcoes":[],"q":"eletroventilador","termos":["eletroventilador"]},{"id":"f12","grupo":"frente","nome":"Painel frontal (travessa)","dica":"E a estrutura atras do parachoque. Se ela amassou, o servico e de funilaria, nao so troca de peca.","opcoes":[],"q":"painel frontal","termos":["painel","frontal"],"excluir":["instrumento","interno"]},{"id":"t01","grupo":"traseira","nome":"Parachoque traseiro","opcoes":[],"q":"parachoque traseiro","termos":["parachoque","traseiro"]},{"id":"t02","grupo":"traseira","nome":"Tampa do porta-malas","opcoes":[],"q":"tampa porta malas","termos":["tampa"]},{"id":"t03","grupo":"traseira","nome":"Lanterna direita","opcoes":[],"q":"lanterna traseira direita","termos":["lanterna","direita"]},{"id":"t04","grupo":"traseira","nome":"Lanterna esquerda","opcoes":[],"q":"lanterna traseira esquerda","termos":["lanterna","esquerda"]},{"id":"t05","grupo":"traseira","nome":"Painel traseiro","dica":"Painel traseiro amassado costuma vir junto com assoalho torto. Olhe o vao da tampa nas fotos.","opcoes":[],"q":"painel traseiro","termos":["painel","traseiro"],"excluir":["instrumento","interno"]},{"id":"t06","grupo":"traseira","nome":"Paralama traseiro direito","opcoes":[],"q":"paralama traseiro direito","termos":["paralama","traseiro","direito"]},{"id":"t07","grupo":"traseira","nome":"Paralama traseiro esquerdo","opcoes":[],"q":"paralama traseiro esquerdo","termos":["paralama","traseiro","esquerdo"]},{"id":"l01","grupo":"lateral","nome":"Porta dianteira direita","opcoes":[],"q":"porta dianteira direita","termos":["porta","dianteira","direita"]},{"id":"l02","grupo":"lateral","nome":"Porta dianteira esquerda","opcoes":[],"q":"porta dianteira esquerda","termos":["porta","dianteira","esquerda"]},{"id":"l03","grupo":"lateral","nome":"Porta traseira direita","opcoes":[],"q":"porta traseira direita","termos":["porta","traseira","direita"]},{"id":"l04","grupo":"lateral","nome":"Porta traseira esquerda","opcoes":[],"q":"porta traseira esquerda","termos":["porta","traseira","esquerda"]},{"id":"l05","grupo":"lateral","nome":"Retrovisor direito","opcoes":[],"q":"retrovisor direito","termos":["retrovisor","direito"],"excluir":["interno","interna"]},{"id":"l06","grupo":"lateral","nome":"Retrovisor esquerdo","opcoes":[],"q":"retrovisor esquerdo","termos":["retrovisor","esquerdo"],"excluir":["interno","interna"]},{"id":"l07","grupo":"lateral","nome":"Soleira","opcoes":[],"q":"soleira","termos":["soleira"]},{"id":"l08","grupo":"lateral","nome":"Caixa de ar","opcoes":[],"q":"caixa de ar","termos":["caixa"]},{"id":"v01","grupo":"vidros","nome":"Parabrisa","opcoes":[],"q":"parabrisa","termos":["parabrisa"],"excluir":["palheta","limpador"]},{"id":"v02","grupo":"vidros","nome":"Vidro traseiro","opcoes":[],"q":"vidro traseiro","termos":["vidro","traseiro"],"excluir":["palheta","limpador"]},{"id":"v03","grupo":"vidros","nome":"Vidro de porta","opcoes":[],"q":"vidro porta","termos":["vidro","porta"]},{"id":"s01","grupo":"seguranca","nome":"Airbag do volante","dica":"Airbag estourado nao se resolve no Mercado Livre. E peca de seguranca: oficina com peca nova mais a reprogramacao do modulo. Poe aqui o orcamento da oficina.","semML":true},{"id":"s02","grupo":"seguranca","nome":"Airbag do passageiro","dica":"Mesma coisa do volante: orcamento de oficina, nao anuncio de internet.","semML":true},{"id":"s03","grupo":"seguranca","nome":"Modulo do airbag","dica":"Depois que o airbag dispara, o modulo grava o evento e trava. Sem reprogramar, a luz nao apaga e o carro nao passa em vistoria.","semML":true},{"id":"s04","grupo":"seguranca","nome":"Cinto de seguranca","dica":"Cinto que travou no impacto tambem e item de seguranca. Troca em oficina.","semML":true},{"id":"r01","grupo":"rodas","nome":"Roda","opcoes":[],"q":"roda","termos":["roda"],"excluir":["calota"]},{"id":"r02","grupo":"rodas","nome":"Pneu","opcoes":[],"q":"pneu","termos":["pneu"]},{"id":"r03","grupo":"rodas","nome":"Amortecedor","opcoes":[],"q":"amortecedor","termos":["amortecedor"]},{"id":"r04","grupo":"rodas","nome":"Bandeja da suspensao","opcoes":[],"q":"bandeja suspensao","termos":["bandeja"]},{"id":"r05","grupo":"rodas","nome":"Ponta de eixo","opcoes":[],"q":"ponta de eixo","termos":["ponta","eixo"]},{"id":"r06","grupo":"rodas","nome":"Cubo de roda","opcoes":[],"q":"cubo de roda","termos":["cubo","roda"]},{"id":"i01","grupo":"interior","nome":"Painel","opcoes":[],"q":"painel","termos":["painel"],"excluir":["frontal","traseiro","traseira"]},{"id":"i02","grupo":"interior","nome":"Forro de porta","opcoes":[],"q":"forro de porta","termos":["forro","porta"]},{"id":"i03","grupo":"interior","nome":"Banco","opcoes":[],"q":"banco","termos":["banco"]}]}]};
+var CATALOGO = {"conferido_em":"","pecas":[{"id":"f01","grupo":"frente","nome":"Parachoque dianteiro","opcoes":[],"q":"parachoque dianteiro","termos":["parachoque","dianteiro"]},{"id":"f02","grupo":"frente","nome":"Capo","opcoes":[],"q":"capo","termos":["capo"]},{"id":"f03","grupo":"frente","nome":"Grade dianteira","opcoes":[],"q":"grade dianteira","termos":["grade"]},{"id":"f04","grupo":"frente","nome":"Farol direito","opcoes":[],"q":"farol direito","termos":["farol","direito"],"excluir":["milha","neblina","auxiliar"]},{"id":"f05","grupo":"frente","nome":"Farol esquerdo","opcoes":[],"q":"farol esquerdo","termos":["farol","esquerdo"],"excluir":["milha","neblina","auxiliar"]},{"id":"f06","grupo":"frente","nome":"Farol de milha ou neblina","opcoes":[],"q":"farol de milha","termos":["farol","milha"]},{"id":"f07","grupo":"frente","nome":"Paralama dianteiro direito","opcoes":[],"q":"paralama dianteiro direito","termos":["paralama","dianteiro","direito"]},{"id":"f08","grupo":"frente","nome":"Paralama dianteiro esquerdo","opcoes":[],"q":"paralama dianteiro esquerdo","termos":["paralama","dianteiro","esquerdo"]},{"id":"f09","grupo":"frente","nome":"Radiador","opcoes":[],"q":"radiador","termos":["radiador"]},{"id":"f10","grupo":"frente","nome":"Condensador do ar","opcoes":[],"q":"condensador ar condicionado","termos":["condensador"]},{"id":"f11","grupo":"frente","nome":"Eletroventilador","opcoes":[],"q":"eletroventilador","termos":["eletroventilador"]},{"id":"f12","grupo":"frente","nome":"Painel frontal (travessa)","dica":"E a estrutura atras do parachoque. Se ela amassou, o servico e de funilaria, nao so troca de peca.","opcoes":[],"q":"painel frontal","termos":["painel","frontal"],"excluir":["instrumento","interno"]},{"id":"t01","grupo":"traseira","nome":"Parachoque traseiro","opcoes":[],"q":"parachoque traseiro","termos":["parachoque","traseiro"]},{"id":"t02","grupo":"traseira","nome":"Tampa do porta-malas","opcoes":[],"q":"tampa porta malas","termos":["tampa"]},{"id":"t03","grupo":"traseira","nome":"Lanterna direita","opcoes":[],"q":"lanterna traseira direita","termos":["lanterna","direita"]},{"id":"t04","grupo":"traseira","nome":"Lanterna esquerda","opcoes":[],"q":"lanterna traseira esquerda","termos":["lanterna","esquerda"]},{"id":"t05","grupo":"traseira","nome":"Painel traseiro","dica":"Painel traseiro amassado costuma vir junto com assoalho torto. Olhe o vao da tampa nas fotos.","opcoes":[],"q":"painel traseiro","termos":["painel","traseiro"],"excluir":["instrumento","interno"]},{"id":"t06","grupo":"traseira","nome":"Paralama traseiro direito","opcoes":[],"q":"paralama traseiro direito","termos":["paralama","traseiro","direito"]},{"id":"t07","grupo":"traseira","nome":"Paralama traseiro esquerdo","opcoes":[],"q":"paralama traseiro esquerdo","termos":["paralama","traseiro","esquerdo"]},{"id":"l01","grupo":"lateral","nome":"Porta dianteira direita","opcoes":[],"q":"porta dianteira direita","termos":["porta","dianteira","direita"]},{"id":"l02","grupo":"lateral","nome":"Porta dianteira esquerda","opcoes":[],"q":"porta dianteira esquerda","termos":["porta","dianteira","esquerda"]},{"id":"l03","grupo":"lateral","nome":"Porta traseira direita","opcoes":[],"q":"porta traseira direita","termos":["porta","traseira","direita"]},{"id":"l04","grupo":"lateral","nome":"Porta traseira esquerda","opcoes":[],"q":"porta traseira esquerda","termos":["porta","traseira","esquerda"]},{"id":"l05","grupo":"lateral","nome":"Retrovisor direito","opcoes":[],"q":"retrovisor direito","termos":["retrovisor","direito"],"excluir":["interno","interna"]},{"id":"l06","grupo":"lateral","nome":"Retrovisor esquerdo","opcoes":[],"q":"retrovisor esquerdo","termos":["retrovisor","esquerdo"],"excluir":["interno","interna"]},{"id":"l07","grupo":"lateral","nome":"Soleira","opcoes":[],"q":"soleira","termos":["soleira"]},{"id":"l08","grupo":"lateral","nome":"Caixa de ar","opcoes":[],"q":"caixa de ar","termos":["caixa"]},{"id":"v01","grupo":"vidros","nome":"Parabrisa","opcoes":[],"q":"parabrisa","termos":["parabrisa"],"excluir":["palheta","limpador"]},{"id":"v02","grupo":"vidros","nome":"Vidro traseiro","opcoes":[],"q":"vidro traseiro","termos":["vidro","traseiro"],"excluir":["palheta","limpador"]},{"id":"v03","grupo":"vidros","nome":"Vidro de porta","opcoes":[],"q":"vidro porta","termos":["vidro","porta"]},{"id":"s01","grupo":"seguranca","nome":"Airbag do volante","dica":"Airbag estourado nao se resolve no Mercado Livre. E peca de seguranca: oficina com peca nova mais a reprogramacao do modulo. Poe aqui o orcamento da oficina.","semML":true},{"id":"s02","grupo":"seguranca","nome":"Airbag do passageiro","dica":"Mesma coisa do volante: orcamento de oficina, nao anuncio de internet.","semML":true},{"id":"s03","grupo":"seguranca","nome":"Modulo do airbag","dica":"Depois que o airbag dispara, o modulo grava o evento e trava. Sem reprogramar, a luz nao apaga e o carro nao passa em vistoria.","semML":true},{"id":"s04","grupo":"seguranca","nome":"Cinto de seguranca","dica":"Cinto que travou no impacto tambem e item de seguranca. Troca em oficina.","semML":true},{"id":"r01","grupo":"rodas","nome":"Roda","opcoes":[],"q":"roda","termos":["roda"],"excluir":["calota"]},{"id":"r02","grupo":"rodas","nome":"Pneu","opcoes":[],"q":"pneu","termos":["pneu"]},{"id":"r03","grupo":"rodas","nome":"Amortecedor","opcoes":[],"q":"amortecedor","termos":["amortecedor"]},{"id":"r04","grupo":"rodas","nome":"Bandeja da suspensao","opcoes":[],"q":"bandeja suspensao","termos":["bandeja"]},{"id":"r05","grupo":"rodas","nome":"Ponta de eixo","opcoes":[],"q":"ponta de eixo","termos":["ponta","eixo"]},{"id":"r06","grupo":"rodas","nome":"Cubo de roda","opcoes":[],"q":"cubo de roda","termos":["cubo","roda"]},{"id":"i01","grupo":"interior","nome":"Painel","opcoes":[],"q":"painel","termos":["painel"],"excluir":["frontal","traseiro","traseira"]},{"id":"i02","grupo":"interior","nome":"Forro de porta","opcoes":[],"q":"forro de porta","termos":["forro","porta"]},{"id":"i03","grupo":"interior","nome":"Banco","opcoes":[],"q":"banco","termos":["banco"]}]};
+var VEICULOS = {"marcas":[{"nome":"Acura","modelos":[{"nome":"Integra"},{"nome":"Legend"},{"nome":"Nsx"}]},{"nome":"Agrale","modelos":[{"nome":"Marru\u00e1"}]},{"nome":"Alfa Romeo","modelos":[{"nome":"145"},{"nome":"147"},{"nome":"155"},{"nome":"156"},{"nome":"164"},{"nome":"166"},{"nome":"2300"},{"nome":"Spider"}]},{"nome":"AM Gen","modelos":[{"nome":"Hummer"}]},{"nome":"Arrow","modelos":[{"nome":"2"}]},{"nome":"Asia Motors","modelos":[{"nome":"AM-825"},{"nome":"Hi-Topic"},{"nome":"Jipe"},{"nome":"Topic"},{"nome":"Towner"}]},{"nome":"Aston Martin","modelos":[{"nome":"DB12"},{"nome":"DB9"},{"nome":"Dbs"},{"nome":"Dbx"},{"nome":"DBX707"},{"nome":"Rapide"},{"nome":"Vanquish"},{"nome":"Vantage"},{"nome":"Virage"}]},{"nome":"Audi","modelos":[{"nome":"100"},{"nome":"80"},{"nome":"A1"},{"nome":"A3"},{"nome":"A4"},{"nome":"A5"},{"nome":"A6"},{"nome":"A7"},{"nome":"A8"},{"nome":"Allroad"},{"nome":"Avant"},{"nome":"E-TRON"},{"nome":"Q3"},{"nome":"Q5"},{"nome":"Q6"},{"nome":"Q7"},{"nome":"Q8"},{"nome":"R8"},{"nome":"RS"},{"nome":"RS3"},{"nome":"RS4"},{"nome":"RS5"},{"nome":"RS6"},{"nome":"RS7"},{"nome":"S3"},{"nome":"S4"},{"nome":"S5"},{"nome":"S6"},{"nome":"S7"},{"nome":"S8"},{"nome":"SQ5"},{"nome":"SQ6"},{"nome":"SQ8"},{"nome":"TT"},{"nome":"Ttrs"},{"nome":"Tts"}]},{"nome":"Baby","modelos":[{"nome":"Buggy"}]},{"nome":"BMW","modelos":[{"nome":"116iA"},{"nome":"118i"},{"nome":"118iA"},{"nome":"120i"},{"nome":"120iA"},{"nome":"125i"},{"nome":"130i"},{"nome":"130iA"},{"nome":"135iA"},{"nome":"218i"},{"nome":"220i"},{"nome":"225i"},{"nome":"316"},{"nome":"316i"},{"nome":"318i"},{"nome":"318i/iA"},{"nome":"318iA"},{"nome":"318iS/ISA"},{"nome":"318Ti"},{"nome":"318Ti/TiA"},{"nome":"320i"},{"nome":"320iA"},{"nome":"323Ci"},{"nome":"323CiA"},{"nome":"323i"},{"nome":"323i/iA"},{"nome":"323iA"},{"nome":"323Ti"},{"nome":"323TiA"},{"nome":"325i"},{"nome":"325i/iA"},{"nome":"325iA"},{"nome":"328i"},{"nome":"328i/iA"},{"nome":"328iA"},{"nome":"330Ci"},{"nome":"330CiA"},{"nome":"330e"},{"nome":"330i"},{"nome":"330iA"},{"nome":"335i"},{"nome":"335iA"},{"nome":"420i"},{"nome":"428i"},{"nome":"430i"},{"nome":"435iA"},{"nome":"520i"},{"nome":"525i/iA"},{"nome":"528i/iA"},{"nome":"528iA"},{"nome":"530e"},{"nome":"530i"},{"nome":"530i/iA"},{"nome":"535i/iA"},{"nome":"535iA"},{"nome":"540i"},{"nome":"540i/iA"},{"nome":"540iA"},{"nome":"540iTA"},{"nome":"545iA"},{"nome":"550iA"},{"nome":"640i"},{"nome":"645Ci"},{"nome":"645iA"},{"nome":"650Ci"},{"nome":"650i"},{"nome":"650iA"},{"nome":"730i"},{"nome":"730iA"},{"nome":"735i/iA"},{"nome":"740i"},{"nome":"740iA"},{"nome":"740iL/iLA"},{"nome":"740iLA"},{"nome":"745iA"},{"nome":"745Le"},{"nome":"750i"},{"nome":"750iA"},{"nome":"750iL"},{"nome":"750iLA"},{"nome":"760iL"},{"nome":"840Ci"},{"nome":"840CiA"},{"nome":"850Ci/CiA"},{"nome":"850CSi"},{"nome":"850i"},{"nome":"i3"},{"nome":"i4"},{"nome":"i5"},{"nome":"i7"},{"nome":"i8"},{"nome":"iX"},{"nome":"M"},{"nome":"M1"},{"nome":"M140i"},{"nome":"M2"},{"nome":"M235i"},{"nome":"M240i"},{"nome":"M3"},{"nome":"M340i"},{"nome":"M4"},{"nome":"M440i"},{"nome":"M5"},{"nome":"M6"},{"nome":"M760Li"},{"nome":"M8"},{"nome":"M850i"},{"nome":"X1"},{"nome":"X2"},{"nome":"X3"},{"nome":"X4"},{"nome":"X5"},{"nome":"X6"},{"nome":"X7"},{"nome":"Z3"},{"nome":"Z4"},{"nome":"Z8"}]},{"nome":"BRM","modelos":[{"nome":"Buggy"},{"nome":"Buggy/M-8/M-8"}]},{"nome":"Bugre","modelos":[{"nome":"Buggy"}]},{"nome":"BYD","modelos":[{"nome":"Atto"},{"nome":"D1"},{"nome":"Dolphin"},{"nome":"eT3"},{"nome":"Han"},{"nome":"King"},{"nome":"Seal"},{"nome":"Sealion"},{"nome":"Shark"},{"nome":"Song"},{"nome":"Tan"},{"nome":"Yuan"}]},{"nome":"CAB Motors","modelos":[{"nome":"Stark"}]},{"nome":"Cadillac","modelos":[{"nome":"Deville/Eldorado"},{"nome":"Seville"}]},{"nome":"Caoa Changan","modelos":[{"nome":"AVATR11"},{"nome":"CS55"},{"nome":"CS75"},{"nome":"Uni-t"}]},{"nome":"Caoa Chery","modelos":[{"nome":"Arrizo"},{"nome":"iCar"},{"nome":"Tiggo"}]},{"nome":"Caoa Chery/Chery","modelos":[{"nome":"Arrizo"},{"nome":"Celer"},{"nome":"Cielo"},{"nome":"Face"},{"nome":"Qq"},{"nome":"S-18"},{"nome":"Tiggo"}]},{"nome":"CBT Jipe","modelos":[{"nome":"Javali"}]},{"nome":"Chana","modelos":[{"nome":"Cargo"},{"nome":"Family"},{"nome":"Utility"}]},{"nome":"Changan","modelos":[{"nome":"Mini"}]},{"nome":"Chevrolet","modelos":[{"nome":"A-10"},{"nome":"A-20"},{"nome":"Agile"},{"nome":"Astra"},{"nome":"Blazer"},{"nome":"Bolt"},{"nome":"Bonanza"},{"nome":"Brasinca"},{"nome":"C-10"},{"nome":"C-20"},{"nome":"Calibra"},{"nome":"Camaro"},{"nome":"Caprice"},{"nome":"Captiva"},{"nome":"Caravan"},{"nome":"Cavalier"},{"nome":"Celta"},{"nome":"Chevette"},{"nome":"Chevy"},{"nome":"Cheynne"},{"nome":"Classic"},{"nome":"Cobalt"},{"nome":"Corsa"},{"nome":"Corvette"},{"nome":"Cruze"},{"nome":"D-10"},{"nome":"D-20"},{"nome":"Equinox"},{"nome":"Ipanema"},{"nome":"Joy"},{"nome":"Kadett"},{"nome":"Lumina"},{"nome":"Malibu"},{"nome":"Marajo"},{"nome":"Meriva"},{"nome":"Montana"},{"nome":"Monza"},{"nome":"Omega"},{"nome":"Onix"},{"nome":"Opala"},{"nome":"Prisma"},{"nome":"S10"},{"nome":"Saturn"},{"nome":"Sierra"},{"nome":"Silverado"},{"nome":"Sonic"},{"nome":"Sonoma"},{"nome":"SpaceVan"},{"nome":"Spark"},{"nome":"Spin"},{"nome":"SS10"},{"nome":"Suburban"},{"nome":"Suprema"},{"nome":"Syclone"},{"nome":"Tigra"},{"nome":"Tracker"},{"nome":"Trafic"},{"nome":"Trailblazer"},{"nome":"Vectra"},{"nome":"Veraneio"},{"nome":"Zafira"}]},{"nome":"Chrysler","modelos":[{"nome":"300"},{"nome":"Caravan"},{"nome":"Cirrus"},{"nome":"Grand Caravan"},{"nome":"Le"},{"nome":"Neon"},{"nome":"Pt"},{"nome":"Sebring"},{"nome":"Stratus"},{"nome":"Town"},{"nome":"Vision"}]},{"nome":"Citro\u00ebn","modelos":[{"nome":"Aircross"},{"nome":"Aircross 7"},{"nome":"Ax"},{"nome":"Basalt"},{"nome":"Berlingo"},{"nome":"Bx"},{"nome":"C3"},{"nome":"C4"},{"nome":"C5"},{"nome":"C6"},{"nome":"C8"},{"nome":"DS3"},{"nome":"DS4"},{"nome":"DS5"},{"nome":"\u00cb-Jumpy"},{"nome":"Evasion"},{"nome":"Grand"},{"nome":"Jumper"},{"nome":"Jumpy"},{"nome":"Xantia"},{"nome":"Xm"},{"nome":"Xsara"},{"nome":"Zx"}]},{"nome":"Cross Lander","modelos":[{"nome":"CL-244"},{"nome":"CL-330"}]},{"nome":"D2D Motors","modelos":[{"nome":"Buggy"}]},{"nome":"Daewoo","modelos":[{"nome":"Espero"},{"nome":"Lanos"},{"nome":"Leganza"},{"nome":"Nubira"},{"nome":"Prince"},{"nome":"Racer"},{"nome":"Super"},{"nome":"Tico"}]},{"nome":"Daihatsu","modelos":[{"nome":"Applause"},{"nome":"Charade"},{"nome":"Cuore"},{"nome":"Feroza"},{"nome":"Gran Move"},{"nome":"Move"},{"nome":"Terios"}]},{"nome":"Denza","modelos":[{"nome":"B5"},{"nome":"D9"},{"nome":"Z9"}]},{"nome":"DFSK","modelos":[{"nome":"EC31"},{"nome":"EC35"}]},{"nome":"Dodge","modelos":[{"nome":"Avenger"},{"nome":"Dakota"},{"nome":"Durango"},{"nome":"Intrepid"},{"nome":"Journey"},{"nome":"Ram"},{"nome":"Stealth"}]},{"nome":"EFFA","modelos":[{"nome":"K01"},{"nome":"K02"},{"nome":"M-100"},{"nome":"Plutus"},{"nome":"Start"},{"nome":"Ulc"},{"nome":"V21"},{"nome":"V22"},{"nome":"V25"}]},{"nome":"Engesa","modelos":[{"nome":"Engesa"}]},{"nome":"Envemo","modelos":[{"nome":"Camper"},{"nome":"Master"}]},{"nome":"Ferrari","modelos":[{"nome":"12Cilinrdri"},{"nome":"296"},{"nome":"348"},{"nome":"355"},{"nome":"360"},{"nome":"456"},{"nome":"458"},{"nome":"488"},{"nome":"550"},{"nome":"575M"},{"nome":"612"},{"nome":"812"},{"nome":"849"},{"nome":"Amalfi"},{"nome":"California"},{"nome":"F12"},{"nome":"F430"},{"nome":"F458"},{"nome":"F599"},{"nome":"F8"},{"nome":"Ff"},{"nome":"GTC4"},{"nome":"Portofino"},{"nome":"Purosangue"},{"nome":"Roma"},{"nome":"Sf"}]},{"nome":"Fever","modelos":[{"nome":"Nextem"}]},{"nome":"Fiat","modelos":[{"nome":"147"},{"nome":"500"},{"nome":"500e"},{"nome":"Argo"},{"nome":"Brava"},{"nome":"Bravo"},{"nome":"Cinquecento"},{"nome":"Coupe"},{"nome":"Cronos"},{"nome":"Doblo"},{"nome":"Ducato"},{"nome":"Duna"},{"nome":"E-Scudo"},{"nome":"Elba"},{"nome":"Fastback"},{"nome":"Fiorino"},{"nome":"Freemont"},{"nome":"Grand Siena"},{"nome":"Idea"},{"nome":"Linea"},{"nome":"Marea"},{"nome":"Mobi"},{"nome":"Oggi"},{"nome":"Palio"},{"nome":"Panorama"},{"nome":"Premio"},{"nome":"Pulse"},{"nome":"Punto"},{"nome":"Scudo"},{"nome":"Siena"},{"nome":"Stilo"},{"nome":"Strada"},{"nome":"Tempra"},{"nome":"Tipo"},{"nome":"Titano"},{"nome":"Toro"},{"nome":"Uno"}]},{"nome":"Fibravan","modelos":[{"nome":"Buggy"}]},{"nome":"Ford","modelos":[{"nome":"Aerostar"},{"nome":"Aspire"},{"nome":"Belina"},{"nome":"Bronco"},{"nome":"Club Wagon"},{"nome":"Contour"},{"nome":"Corcel"},{"nome":"Courier"},{"nome":"Crown Victoria"},{"nome":"Del Rey"},{"nome":"E-TRANSIT"},{"nome":"EcoSport"},{"nome":"Edge"},{"nome":"Escort"},{"nome":"Expedition"},{"nome":"Explorer"},{"nome":"F-100"},{"nome":"F-1000"},{"nome":"F-150"},{"nome":"F-250"},{"nome":"Fiesta"},{"nome":"Focus"},{"nome":"Furglaine"},{"nome":"Fusion"},{"nome":"Ibiza"},{"nome":"Ka"},{"nome":"Ka+"},{"nome":"Maverick"},{"nome":"Mondeo"},{"nome":"Mustang"},{"nome":"Pampa"},{"nome":"Probe"},{"nome":"Ranger"},{"nome":"Royale"},{"nome":"Taurus"},{"nome":"Territory"},{"nome":"Thunderbird"},{"nome":"Transit"},{"nome":"Verona"},{"nome":"Versailles"},{"nome":"Windstar"}]},{"nome":"Foton","modelos":[{"nome":"Aumark"},{"nome":"eToano"},{"nome":"eView"},{"nome":"eWonder"},{"nome":"Minitruck"},{"nome":"Tunland"}]},{"nome":"Fyber","modelos":[{"nome":"Buggy"}]},{"nome":"GAC","modelos":[{"nome":"Aion"},{"nome":"GS3"},{"nome":"GS4"},{"nome":"GS9"},{"nome":"Hyptec"}]},{"nome":"Geely","modelos":[{"nome":"EC7"},{"nome":"EX2"},{"nome":"EX5"},{"nome":"GC2"}]},{"nome":"Great Wall","modelos":[{"nome":"Hover"}]},{"nome":"Gurgel","modelos":[{"nome":"BR-800"},{"nome":"Carajas"},{"nome":"Carajas/Tocantis/Xavante/Vip"}]},{"nome":"GWM","modelos":[{"nome":"Haval"},{"nome":"Ora"},{"nome":"Poer"},{"nome":"Tank"},{"nome":"Wey"}]},{"nome":"Hafei","modelos":[{"nome":"Towner"}]},{"nome":"Hitech Electric","modelos":[{"nome":"Delivery"},{"nome":"E-Work"},{"nome":"e.co"},{"nome":"e.coCargo"},{"nome":"e.coTruck"}]},{"nome":"Honda","modelos":[{"nome":"Accord"},{"nome":"City"},{"nome":"Civic"},{"nome":"CR-V"},{"nome":"Fit"},{"nome":"HR-V"},{"nome":"Odyssey"},{"nome":"Passport"},{"nome":"Prelude"},{"nome":"WR-V"},{"nome":"ZR-V"}]},{"nome":"Hyundai","modelos":[{"nome":"Accent"},{"nome":"Atos"},{"nome":"Azera"},{"nome":"Coupe"},{"nome":"Creta"},{"nome":"Cup\u00ea"},{"nome":"Elantra"},{"nome":"Equus"},{"nome":"Excel"},{"nome":"Galloper"},{"nome":"Genesis"},{"nome":"Grand Santa F\u00e9"},{"nome":"H1"},{"nome":"H100"},{"nome":"HB20"},{"nome":"HB20S"},{"nome":"HB20X"},{"nome":"HR"},{"nome":"I20"},{"nome":"i30"},{"nome":"i30cw"},{"nome":"Ioniq"},{"nome":"ix35"},{"nome":"Kona"},{"nome":"Matrix"},{"nome":"Palisade"},{"nome":"Porter"},{"nome":"Santa Fe"},{"nome":"Scoupe"},{"nome":"Sonata"},{"nome":"Terracan"},{"nome":"Trajet"},{"nome":"Tucson"},{"nome":"Veloster"},{"nome":"Veracruz"}]},{"nome":"Isuzu","modelos":[{"nome":"Amigo"},{"nome":"Hombre"},{"nome":"Rodeo"}]},{"nome":"IVECO","modelos":[{"nome":"Daily"}]},{"nome":"JAC","modelos":[{"nome":"E-J7"},{"nome":"e-JS1"},{"nome":"e-JS4"},{"nome":"E-JT3.5"},{"nome":"E-JV"},{"nome":"E-JV12"},{"nome":"E-JV5.5"},{"nome":"E-JV7L"},{"nome":"Hunter"},{"nome":"iEV"},{"nome":"J2"},{"nome":"J3"},{"nome":"J5"},{"nome":"J6"},{"nome":"T"},{"nome":"T40"},{"nome":"T5"},{"nome":"T50"},{"nome":"T6"},{"nome":"T60"},{"nome":"T8"},{"nome":"T80"},{"nome":"V260"}]},{"nome":"Jaecoo","modelos":[{"nome":"7"}]},{"nome":"Jaguar","modelos":[{"nome":"Daimler"},{"nome":"E-Pace"},{"nome":"F-Pace"},{"nome":"F-Type"},{"nome":"I-Pace"},{"nome":"S-Type"},{"nome":"X-Type"},{"nome":"XE"},{"nome":"XF"},{"nome":"Xfr"},{"nome":"Xfr-s"},{"nome":"XJ"},{"nome":"XJ-12"},{"nome":"XJ-6"},{"nome":"XJ-8"},{"nome":"Xjr"},{"nome":"Xjs"},{"nome":"Xjs-c"},{"nome":"XK-8"},{"nome":"Xkr"},{"nome":"Xkr-s"}]},{"nome":"Jeep","modelos":[{"nome":"Avenger"},{"nome":"Cherokee"},{"nome":"Commander"},{"nome":"Compass"},{"nome":"Gladiator"},{"nome":"Grand Cherokee"},{"nome":"Renegade"},{"nome":"Wrangler"}]},{"nome":"Jetour","modelos":[{"nome":"S06"},{"nome":"T1"},{"nome":"T2"}]},{"nome":"Jinbei","modelos":[{"nome":"Topic"},{"nome":"Vkn"}]},{"nome":"JPX","modelos":[{"nome":"Jipe"},{"nome":"Picape"}]},{"nome":"Kia Motors","modelos":[{"nome":"Besta"},{"nome":"Bongo"},{"nome":"Cadenza"},{"nome":"Carens"},{"nome":"Carnival"},{"nome":"Cerato"},{"nome":"Ceres"},{"nome":"Clarus"},{"nome":"EV5"},{"nome":"EV9"},{"nome":"Grand Carnival"},{"nome":"Magentis"},{"nome":"Mohave"},{"nome":"Niro"},{"nome":"Opirus"},{"nome":"Optima"},{"nome":"Picanto"},{"nome":"Quoris"},{"nome":"Rio"},{"nome":"Sephia"},{"nome":"Shuma"},{"nome":"Sorento"},{"nome":"Soul"},{"nome":"Sportage"},{"nome":"Stinger"},{"nome":"Stonic"},{"nome":"Tasman"}]},{"nome":"Lada","modelos":[{"nome":"Laika"},{"nome":"Niva"},{"nome":"Samara"}]},{"nome":"Lamborghini","modelos":[{"nome":"Aventador"},{"nome":"Gallardo"},{"nome":"Huracan"},{"nome":"Hurac\u00e1n"},{"nome":"Revuelto"},{"nome":"Temer\u00e1rio"},{"nome":"Urus"}]},{"nome":"Land Rover","modelos":[{"nome":"Defender"},{"nome":"Discovery"},{"nome":"Discovery 3"},{"nome":"Discovery 4"},{"nome":"Freelander"},{"nome":"Freelander 2"},{"nome":"Range Rover"},{"nome":"Range Rover Evoque"},{"nome":"Range Rover Sport"},{"nome":"Range Rover Velar"},{"nome":"Range Rover Vogue"}]},{"nome":"Leapmotor","modelos":[{"nome":"B10"},{"nome":"C10"}]},{"nome":"Lexus","modelos":[{"nome":"CT200h"},{"nome":"ES-300"},{"nome":"ES-330"},{"nome":"ES-350"},{"nome":"ES300h"},{"nome":"GS"},{"nome":"IS-250"},{"nome":"IS-300"},{"nome":"LS"},{"nome":"LS-460L"},{"nome":"NX-200t"},{"nome":"NX-300"},{"nome":"NX-300h"},{"nome":"NX-350h"},{"nome":"NX-450h+"},{"nome":"RX"},{"nome":"RX-350"},{"nome":"RX-450h"},{"nome":"RX-450h+"},{"nome":"RX-500h"},{"nome":"RZ-500e"},{"nome":"Sc"},{"nome":"UX-250h"},{"nome":"UX-300h"}]},{"nome":"Lifan","modelos":[{"nome":"320"},{"nome":"530"},{"nome":"620"},{"nome":"Foison"},{"nome":"X60"},{"nome":"X80"}]},{"nome":"Lobini","modelos":[{"nome":"H1"}]},{"nome":"Lotus","modelos":[{"nome":"Elan"},{"nome":"Esprit"}]},{"nome":"Mahindra","modelos":[{"nome":"Pik-up"},{"nome":"Scorpio"},{"nome":"SUV"}]},{"nome":"Maserati","modelos":[{"nome":"222"},{"nome":"228"},{"nome":"3200"},{"nome":"430"},{"nome":"Coup\u00e9"},{"nome":"Ghibli"},{"nome":"Gran Turismo"},{"nome":"GranCabrio"},{"nome":"GranSport"},{"nome":"GranTurismo"},{"nome":"Levante"},{"nome":"MC20"},{"nome":"Quattroporte"},{"nome":"Shamal"},{"nome":"Spyder"}]},{"nome":"Matra","modelos":[{"nome":"Pick-Up"}]},{"nome":"Mazda","modelos":[{"nome":"323"},{"nome":"626"},{"nome":"929"},{"nome":"B-2500"},{"nome":"B2200"},{"nome":"Millenia"},{"nome":"Mpv"},{"nome":"MX-3"},{"nome":"MX-5"},{"nome":"Navajo"},{"nome":"Proteg\u00e9"},{"nome":"RX"}]},{"nome":"Mclaren","modelos":[{"nome":"540C"},{"nome":"570S"},{"nome":"600LT"},{"nome":"720S"},{"nome":"750S"},{"nome":"765LT"},{"nome":"Artura"},{"nome":"GT"},{"nome":"Gts"}]},{"nome":"Mercedes-Benz","modelos":[{"nome":"180-D"},{"nome":"190-E"},{"nome":"230-E"},{"nome":"260-E"},{"nome":"300-D"},{"nome":"300-E"},{"nome":"300-SE"},{"nome":"300-SL"},{"nome":"300-TE"},{"nome":"500-E"},{"nome":"500-SEC"},{"nome":"500-SEL"},{"nome":"560-SEL"},{"nome":"A-200"},{"nome":"A-250"},{"nome":"A-35"},{"nome":"A-45"},{"nome":"C-180"},{"nome":"C-200"},{"nome":"C-220"},{"nome":"C-230"},{"nome":"C-240"},{"nome":"C-250"},{"nome":"C-280"},{"nome":"C-300"},{"nome":"C-320"},{"nome":"C-350"},{"nome":"C-36"},{"nome":"C-43"},{"nome":"C-450"},{"nome":"C-55"},{"nome":"C-63"},{"nome":"CL-500"},{"nome":"CL-600"},{"nome":"CL-63"},{"nome":"CL-65"},{"nome":"CLA"},{"nome":"Classe A"},{"nome":"Classe B"},{"nome":"Classe R"},{"nome":"Classic"},{"nome":"CLC"},{"nome":"CLK"},{"nome":"CLS"},{"nome":"E-190"},{"nome":"E-200"},{"nome":"E-220"},{"nome":"E-230"},{"nome":"E-240"},{"nome":"E-250"},{"nome":"E-280"},{"nome":"E-300"},{"nome":"E-320"},{"nome":"E-350"},{"nome":"E-400"},{"nome":"E-420"},{"nome":"E-43"},{"nome":"E-430"},{"nome":"E-500"},{"nome":"E-53"},{"nome":"E-55"},{"nome":"E-63"},{"nome":"EQA"},{"nome":"EQB"},{"nome":"EQC"},{"nome":"EQE"},{"nome":"EQS"},{"nome":"eSprinter"},{"nome":"G-55"},{"nome":"G-63"},{"nome":"GL-350"},{"nome":"GL-500"},{"nome":"GL-63"},{"nome":"GLA"},{"nome":"GLB"},{"nome":"GLC"},{"nome":"GLC-220D"},{"nome":"GLE"},{"nome":"GLK"},{"nome":"GLS"},{"nome":"GT"},{"nome":"ML-230"},{"nome":"ML-320"},{"nome":"ML-350"},{"nome":"ML-430"},{"nome":"ML-500"},{"nome":"ML-55"},{"nome":"ML-63"},{"nome":"S-320"},{"nome":"S-400"},{"nome":"S-420"},{"nome":"S-500"},{"nome":"S-500L"},{"nome":"S-55"},{"nome":"S-560L"},{"nome":"S-600"},{"nome":"S-63"},{"nome":"S-65"},{"nome":"SE-500"},{"nome":"SL-280"},{"nome":"SL-320"},{"nome":"SL-350"},{"nome":"SL-400"},{"nome":"SL-500"},{"nome":"SL-55"},{"nome":"SL-600"},{"nome":"SL-63"},{"nome":"SL-65"},{"nome":"SLC"},{"nome":"SLK"},{"nome":"SLS"},{"nome":"Sprin."},{"nome":"Sprinter"},{"nome":"Vito"}]},{"nome":"Mercury","modelos":[{"nome":"Mystique"},{"nome":"Sable"}]},{"nome":"MG","modelos":[{"nome":"4"},{"nome":"550"},{"nome":"Cyberster"},{"nome":"MG6"},{"nome":"S5"}]},{"nome":"Mini","modelos":[{"nome":"Aceman"},{"nome":"Cooper"},{"nome":"One"}]},{"nome":"Mitsubishi","modelos":[{"nome":"3000"},{"nome":"Airtrek"},{"nome":"Asx"},{"nome":"Asx-s"},{"nome":"Colt"},{"nome":"Diamant"},{"nome":"Eclipse"},{"nome":"Expo"},{"nome":"Galant"},{"nome":"Grandis"},{"nome":"L200"},{"nome":"L300"},{"nome":"Lancer"},{"nome":"Mirage"},{"nome":"Montero"},{"nome":"Outlander"},{"nome":"Pajero"},{"nome":"Space Wagon"},{"nome":"Triton"}]},{"nome":"Miura","modelos":[{"nome":"Picape"}]},{"nome":"Neta","modelos":[{"nome":"Aya"},{"nome":"X"}]},{"nome":"Nissan","modelos":[{"nome":"350Z"},{"nome":"Altima"},{"nome":"Ax"},{"nome":"D-21"},{"nome":"Frontier"},{"nome":"GT-R"},{"nome":"Infinit"},{"nome":"Kait"},{"nome":"Kicks"},{"nome":"King-Cab"},{"nome":"Leaf"},{"nome":"Livina"},{"nome":"March"},{"nome":"Maxima"},{"nome":"Micra"},{"nome":"Murano"},{"nome":"NX"},{"nome":"Pathfinder"},{"nome":"Pick-Up"},{"nome":"Primera"},{"nome":"Quest"},{"nome":"Sentra"},{"nome":"Stanza"},{"nome":"Sx"},{"nome":"Terrano"},{"nome":"Tiida"},{"nome":"Versa"},{"nome":"X-TRAIL"},{"nome":"XTerra"},{"nome":"Zx"}]},{"nome":"Omoda","modelos":[{"nome":"5"},{"nome":"7"},{"nome":"E5"}]},{"nome":"Peugeot","modelos":[{"nome":"106"},{"nome":"2008"},{"nome":"205"},{"nome":"206"},{"nome":"207"},{"nome":"208"},{"nome":"3008"},{"nome":"306"},{"nome":"307"},{"nome":"308"},{"nome":"405"},{"nome":"406"},{"nome":"407"},{"nome":"408"},{"nome":"5008"},{"nome":"504"},{"nome":"505"},{"nome":"508"},{"nome":"605"},{"nome":"607"},{"nome":"806"},{"nome":"807"},{"nome":"Boxer"},{"nome":"e-2008"},{"nome":"e-208"},{"nome":"E-Expert"},{"nome":"Expert"},{"nome":"Hoggar"},{"nome":"Partner"},{"nome":"Rcz"}]},{"nome":"Plymouth","modelos":[{"nome":"Gran Voyager"},{"nome":"Sundance"}]},{"nome":"Pontiac","modelos":[{"nome":"Trans-AM"},{"nome":"Trans-Sport"}]},{"nome":"Porsche","modelos":[{"nome":"718"},{"nome":"911"},{"nome":"928"},{"nome":"968"},{"nome":"Boxster"},{"nome":"Cayene"},{"nome":"Cayenne"},{"nome":"Cayman"},{"nome":"Macan"},{"nome":"Panamera"},{"nome":"Taycan"}]},{"nome":"RAM","modelos":[{"nome":"1500"},{"nome":"2500"},{"nome":"3500"},{"nome":"Classic"},{"nome":"Dakota"},{"nome":"Rampage"}]},{"nome":"Rely","modelos":[{"nome":"Link"},{"nome":"Pick-up"},{"nome":"Van"}]},{"nome":"Renault","modelos":[{"nome":"19"},{"nome":"21"},{"nome":"Boreal"},{"nome":"Captur"},{"nome":"Clio"},{"nome":"Duster"},{"nome":"Express"},{"nome":"Fluence"},{"nome":"Kangoo"},{"nome":"Kardian"},{"nome":"Koleos"},{"nome":"Kwid"},{"nome":"Laguna"},{"nome":"Logan"},{"nome":"Master"},{"nome":"Megane"},{"nome":"Oroch"},{"nome":"Safrane"},{"nome":"Sandero"},{"nome":"Sc\u00e9nic"},{"nome":"Stepway"},{"nome":"Symbol"},{"nome":"Trafic"},{"nome":"Twingo"},{"nome":"Zoe"}]},{"nome":"Rolls-Royce","modelos":[{"nome":"Cullinan"},{"nome":"Dawn"},{"nome":"Ghost"},{"nome":"Phantom"},{"nome":"Wraith"}]},{"nome":"Rover","modelos":[{"nome":"Mini"}]},{"nome":"Saab","modelos":[{"nome":"9000"}]},{"nome":"Saturn","modelos":[{"nome":"SL-2"}]},{"nome":"Seat","modelos":[{"nome":"Cordoba"},{"nome":"Ibiza"},{"nome":"Inca"}]},{"nome":"Seres","modelos":[{"nome":"Seres"}]},{"nome":"Shineray","modelos":[{"nome":"Dtruck"},{"nome":"SY1020"},{"nome":"SY6370"},{"nome":"SY6390"},{"nome":"Tlux"},{"nome":"X30"}]},{"nome":"Smart","modelos":[{"nome":"fortwo"}]},{"nome":"Ssangyong","modelos":[{"nome":"Actyon"},{"nome":"Chairman"},{"nome":"Istana"},{"nome":"Korando"},{"nome":"Kyron"},{"nome":"Musso"},{"nome":"Rexton"},{"nome":"Tivoli"},{"nome":"Xlv"}]},{"nome":"Subaru","modelos":[{"nome":"Forester"},{"nome":"Impreza"},{"nome":"Legacy"},{"nome":"Outback"},{"nome":"Svx"},{"nome":"Tribeca"},{"nome":"Vivio"},{"nome":"Xv"}]},{"nome":"Suzuki","modelos":[{"nome":"Baleno"},{"nome":"e-Vitara"},{"nome":"Grand Vitara"},{"nome":"Ignis"},{"nome":"Jimny"},{"nome":"S-CROSS"},{"nome":"Samurai"},{"nome":"Sidekick"},{"nome":"Super"},{"nome":"Swift"},{"nome":"SX4"},{"nome":"Vitara"},{"nome":"Wagon"}]},{"nome":"TAC","modelos":[{"nome":"Stark"}]},{"nome":"Toyota","modelos":[{"nome":"Avalon"},{"nome":"Bandeirante"},{"nome":"bZ4X"},{"nome":"Camry"},{"nome":"Celica"},{"nome":"Corolla"},{"nome":"Corona"},{"nome":"Etios"},{"nome":"Hiace"},{"nome":"Hilux"},{"nome":"Land Cruiser"},{"nome":"MR-2"},{"nome":"Paseo"},{"nome":"Previa"},{"nome":"Prius"},{"nome":"RAV4"},{"nome":"Supra"},{"nome":"T-100"},{"nome":"Yaris"}]},{"nome":"Troller","modelos":[{"nome":"Pantanal"},{"nome":"Rf"},{"nome":"T-4"}]},{"nome":"Volkswagen","modelos":[{"nome":"Amarok"},{"nome":"Apolo"},{"nome":"Bora"},{"nome":"Caravelle"},{"nome":"Corrado"},{"nome":"Crossfox"},{"nome":"Delivery"},{"nome":"Eos"},{"nome":"Eurovan"},{"nome":"Fox"},{"nome":"Fusca"},{"nome":"Gol"},{"nome":"Golf"},{"nome":"Grand Saveiro"},{"nome":"Jetta"},{"nome":"Kombi"},{"nome":"Logus"},{"nome":"New Beetle"},{"nome":"Nivus"},{"nome":"Parati"},{"nome":"Passat"},{"nome":"Pointer"},{"nome":"Polo"},{"nome":"Quantum"},{"nome":"Santana"},{"nome":"Saveiro"},{"nome":"SpaceCross"},{"nome":"Spacefox"},{"nome":"T-Cross"},{"nome":"Taos"},{"nome":"Tera"},{"nome":"Tiguan"},{"nome":"Touareg"},{"nome":"up!"},{"nome":"Van"},{"nome":"Virtus"},{"nome":"Voyage"}]},{"nome":"Volvo","modelos":[{"nome":"440"},{"nome":"460"},{"nome":"850"},{"nome":"940"},{"nome":"960"},{"nome":"C30"},{"nome":"C40"},{"nome":"C70"},{"nome":"EC40"},{"nome":"ES"},{"nome":"EX30"},{"nome":"EX40"},{"nome":"EX90"},{"nome":"S40"},{"nome":"S60"},{"nome":"S70"},{"nome":"S80"},{"nome":"S90"},{"nome":"V40"},{"nome":"V50"},{"nome":"V60"},{"nome":"V70"},{"nome":"XC"}]},{"nome":"Wake","modelos":[{"nome":"Cross"},{"nome":"Street"},{"nome":"Way"}]},{"nome":"Walk","modelos":[{"nome":"Buggy"}]},{"nome":"Zeekr","modelos":[{"nome":"001"},{"nome":"7X"},{"nome":"X"}]}]};
 /* ============================================================
    CATALOGO:FIM
    ============================================================ */
@@ -279,9 +291,7 @@ function opcoesVivas(p){
 }
 function temVivas(){
   var n = 0;
-  CATALOGO.picapes.forEach(function(pic){
-    pic.pecas.forEach(function(p){ n += opcoesVivas(p).length; });
-  });
+  CATALOGO.pecas.forEach(function(p){ n += opcoesVivas(p).length; });
   return n;
 }
 
@@ -309,12 +319,44 @@ function lsCarregar(){
   } catch(e){}
 }
 
-function picapeAtual(){
-  for (var i = 0; i < CATALOGO.picapes.length; i++){
-    var p = CATALOGO.picapes[i];
-    if (p.marca === SEL.marca && p.modelo === SEL.modelo) return p;
+/* ---------- o carro (qualquer marca/modelo da FIPE) ---------- */
+var ANO_MIN_GENERICO = 1970;
+
+function normaliza(s){
+  return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function marcaObj(nome){
+  for (var i = 0; i < VEICULOS.marcas.length; i++){
+    if (VEICULOS.marcas[i].nome === nome) return VEICULOS.marcas[i];
   }
   return null;
+}
+
+function modeloObj(marca, nome){
+  var m = marcaObj(marca);
+  if (!m || !nome) return null;
+  for (var i = 0; i < m.modelos.length; i++){
+    if (m.modelos[i].nome === nome) return m.modelos[i];
+  }
+  return null;
+}
+
+function anosDe(marca, modelo){
+  var mo = modeloObj(marca, modelo);
+  if (mo && mo.anos && mo.anos.length) return mo.anos.map(String);
+  /* sem o ano exato da FIPE pra esse modelo: lista do ano que vem pra tras */
+  var out = [], fim = new Date().getFullYear() + 1;
+  for (var a = fim; a >= ANO_MIN_GENERICO; a--) out.push(String(a));
+  return out;
+}
+
+/* nome historico (a pagina nasceu so com picape): devolve o carro escolhido
+   com a lista geral de pecas, ou null se marca/modelo ainda nao foram escolhidos */
+function picapeAtual(){
+  if (!modeloObj(SEL.marca, SEL.modelo)) return null;
+  return { marca: SEL.marca, modelo: SEL.modelo, pecas: CATALOGO.pecas };
 }
 
 /* ---------- blocos ---------- */
@@ -329,41 +371,175 @@ function avisoAfiliado(){
 
 function naoPronto(){
   var faltando = [];
-  if (!CATALOGO.picapes.length) faltando.push('o catálogo de picapes e peças (pecas.json + gerar_base.py)');
+  if (!CATALOGO.pecas.length) faltando.push('o catálogo de peças (pecas.json + gerar_base.py)');
+  if (!VEICULOS.marcas.length) faltando.push('a lista de veículos da FIPE (fipe/veiculos.json)');
   if (!CFG.DOMINIO_DECLARADO) faltando.push('o domínio declarado no cadastro de afiliado');
   return '<div class="nao-pronto"><b>Esta página ainda não está pronta pra publicar.</b>' +
     '<ol><li>' + faltando.join('</li><li>') + '</li></ol></div>';
 }
 
+var SETA = '<svg viewBox="0 0 12 7" aria-hidden="true"><path d="M1 1l5 5 5-5" stroke="#88826F" stroke-width="1.6" fill="none"/></svg>';
+
+function combo(id, rotulo, valor, desligado){
+  return '<div class="campo combo">' +
+    '<label for="in-' + id + '">' + esc(rotulo) + '</label>' +
+    '<div class="cb-caixa">' +
+    '<input id="in-' + id + '" type="text" autocomplete="off" spellcheck="false" ' +
+    'placeholder="' + (desligado ? '' : 'Digite ou escolha') + '" value="' + esc(valor) + '"' +
+    ' role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ls-' + id + '"' +
+    (desligado ? ' disabled' : '') + '>' +
+    '<button type="button" class="cb-seta" data-combo="' + id + '" tabindex="-1" aria-label="Abrir a lista"' +
+    (desligado ? ' disabled' : '') + '>' + SETA + '</button>' +
+    '</div>' +
+    '<ul class="cb-lista" id="ls-' + id + '" role="listbox" hidden></ul>' +
+    '</div>';
+}
+
 function blocoSeletor(){
-  var marcas = [];
-  CATALOGO.picapes.forEach(function(p){
-    if (marcas.indexOf(p.marca) === -1) marcas.push(p.marca);
-  });
-  var modelos = CATALOGO.picapes.filter(function(p){ return p.marca === SEL.marca; })
-    .map(function(p){ return p.modelo; });
-  var pic = picapeAtual();
-  var anos = (pic && pic.anos && pic.anos.length) ? pic.anos : [];
-  function opts(lista, atual, vazio){
-    var h = '<option value="">' + esc(vazio) + '</option>';
-    lista.forEach(function(v){
-      h += '<option value="' + esc(v) + '"' + (v === atual ? ' selected' : '') + '>' + esc(v) + '</option>';
-    });
-    return h;
-  }
   return '<div class="seletor">' +
     '<div class="rot micro">Qual é o carro</div>' +
     '<div class="sel-grade">' +
-    '<div class="campo"><label for="selMarca">Marca</label>' +
-    '<select id="selMarca">' + opts(marcas, SEL.marca, 'Escolha') + '</select></div>' +
-    '<div class="campo"><label for="selModelo">Modelo</label>' +
-    '<select id="selModelo"' + (SEL.marca ? '' : ' disabled') + '>' +
-    opts(modelos, SEL.modelo, 'Escolha') + '</select></div>' +
-    '<div class="campo"><label for="selAno">Ano</label>' +
-    '<select id="selAno"' + (SEL.modelo ? '' : ' disabled') + '>' +
-    (anos.length ? opts(anos, SEL.ano, 'Escolha') : '<option value="">Todos os anos</option>') +
-    '</select></div>' +
+    combo('marca', 'Marca', SEL.marca, false) +
+    combo('modelo', 'Modelo', SEL.modelo, !SEL.marca) +
+    combo('ano', 'Ano', SEL.ano, !SEL.modelo) +
     '</div></div>';
+}
+
+/* ---------- os campos com lista + busca ----------
+   Abre a lista inteira ao tocar; digitar filtra (sem acento e sem caixa,
+   quem COMECA com o texto vem antes de quem so CONTEM). So vale valor da
+   lista: texto solto volta pro que estava escolhido. Escolheu a marca, o
+   modelo ja abre; escolheu o modelo, o ano ja abre. */
+function filtrarOpcoes(lista, texto){
+  var t = normaliza(texto);
+  if (!t) return lista.slice();
+  var ini = [], meio = [];
+  lista.forEach(function(v){
+    var n = normaliza(v);
+    if (n.indexOf(t) === 0) ini.push(v);
+    else if (n.indexOf(t) !== -1) meio.push(v);
+  });
+  return ini.concat(meio);
+}
+
+function opcoesDo(id){
+  if (id === 'marca') return VEICULOS.marcas.map(function(m){ return m.nome; });
+  if (id === 'modelo'){
+    var m = marcaObj(SEL.marca);
+    return m ? m.modelos.map(function(x){ return x.nome; }) : [];
+  }
+  if (id === 'ano') return anosDe(SEL.marca, SEL.modelo);
+  return [];
+}
+
+var CB = { aberto: null, ativo: -1, itens: [] };
+
+function abrirCombo(id, texto){
+  var ls = $('ls-' + id), inp = $('in-' + id);
+  if (!ls || !inp || inp.disabled) return;
+  if (CB.aberto && CB.aberto !== id) fecharCombo(CB.aberto);
+  var atual = SEL[id] || '';
+  var filtro = (texto != null && texto !== atual) ? texto : '';
+  CB.itens = filtrarOpcoes(opcoesDo(id), filtro);
+  CB.aberto = id;
+  CB.ativo = filtro ? 0 : CB.itens.indexOf(atual);
+  desenharLista(id);
+  ls.hidden = false;
+  inp.setAttribute('aria-expanded', 'true');
+}
+
+function desenharLista(id){
+  var ls = $('ls-' + id);
+  if (!ls) return;
+  if (!CB.itens.length){ ls.innerHTML = '<li class="vazio">Nada encontrado</li>'; return; }
+  ls.innerHTML = CB.itens.map(function(v, i){
+    return '<li role="option" data-i="' + i + '"' +
+      (i === CB.ativo ? ' class="ativo" aria-selected="true"' : '') + '>' + esc(v) + '</li>';
+  }).join('');
+  var at = ls.querySelector('li.ativo');
+  if (at && at.scrollIntoView) at.scrollIntoView({block: 'nearest'});
+}
+
+function fecharCombo(id){
+  var ls = $('ls-' + id), inp = $('in-' + id);
+  if (ls) ls.hidden = true;
+  if (inp){
+    inp.setAttribute('aria-expanded', 'false');
+    if (inp.value !== (SEL[id] || '')) inp.value = SEL[id] || '';
+  }
+  if (CB.aberto === id){ CB.aberto = null; CB.ativo = -1; CB.itens = []; }
+}
+
+function focarCombo(id){
+  var inp = $('in-' + id);
+  if (inp && !inp.disabled){ inp.focus(); abrirCombo(id, ''); }
+}
+
+function escolherCombo(id, valor){
+  if (valor == null) return;
+  fecharCombo(id);
+  if (id === 'marca'){
+    if (valor !== SEL.marca){
+      SEL.marca = valor; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
+      lsGravar(); montar();
+    }
+    focarCombo('modelo');
+  } else if (id === 'modelo'){
+    if (valor !== SEL.modelo){
+      SEL.modelo = valor; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
+      lsGravar(); montar();
+    }
+    focarCombo('ano');
+  } else if (id === 'ano'){
+    SEL.ano = valor; lsGravar();
+    var inp = $('in-ano');
+    if (inp){ inp.value = valor; inp.blur(); }
+    soResultado();
+  }
+}
+
+function ligarCombos(){
+  ['marca', 'modelo', 'ano'].forEach(function(id){
+    var inp = $('in-' + id), ls = $('ls-' + id);
+    if (!inp || !ls) return;
+    inp.onfocus = function(){ this.select(); abrirCombo(id, ''); };
+    inp.oninput = function(){ abrirCombo(id, this.value); };
+    inp.onkeydown = function(ev){
+      if (CB.aberto !== id){
+        if (ev.key === 'ArrowDown' || ev.key === 'Enter'){ ev.preventDefault(); abrirCombo(id, ''); }
+        return;
+      }
+      if (ev.key === 'ArrowDown'){
+        ev.preventDefault(); CB.ativo = Math.min(CB.itens.length - 1, CB.ativo + 1); desenharLista(id);
+      } else if (ev.key === 'ArrowUp'){
+        ev.preventDefault(); CB.ativo = Math.max(0, CB.ativo - 1); desenharLista(id);
+      } else if (ev.key === 'Enter'){
+        ev.preventDefault();
+        if (CB.ativo >= 0) escolherCombo(id, CB.itens[CB.ativo]);
+        else if (CB.itens.length === 1) escolherCombo(id, CB.itens[0]);
+      } else if (ev.key === 'Escape'){
+        fecharCombo(id); this.blur();
+      } else if (ev.key === 'Tab'){
+        if (this.value && CB.itens.length === 1) escolherCombo(id, CB.itens[0]); else fecharCombo(id);
+      }
+    };
+    inp.onblur = function(){ setTimeout(function(){ if (CB.aberto === id) fecharCombo(id); }, 160); };
+    /* mousedown (e nao click): escolhe antes do blur fechar a lista */
+    ls.onmousedown = function(ev){
+      var li = ev.target.closest('li[data-i]');
+      if (!li) return;
+      ev.preventDefault();
+      escolherCombo(id, CB.itens[+li.getAttribute('data-i')]);
+    };
+  });
+  var setas = document.querySelectorAll('button[data-combo]');
+  for (var k = 0; k < setas.length; k++){
+    setas[k].onmousedown = function(ev){
+      ev.preventDefault();
+      var id = this.getAttribute('data-combo');
+      if (CB.aberto === id) fecharCombo(id); else focarCombo(id);
+    };
+  }
 }
 
 function blocoMarcar(pic){
@@ -717,7 +893,7 @@ function soResultado(){
 }
 
 function render(){
-  if (!CATALOGO.picapes.length || !CFG.DOMINIO_DECLARADO){
+  if (!CATALOGO.pecas.length || !VEICULOS.marcas.length || !CFG.DOMINIO_DECLARADO){
     $('corpo').innerHTML = naoPronto();
     return;
   }
@@ -725,18 +901,7 @@ function render(){
 }
 
 function ligar(){
-  var m = $('selMarca'), mo = $('selModelo'), a = $('selAno');
-  if (m) m.onchange = function(){
-    SEL.marca = this.value; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
-    lsGravar(); montar();
-  };
-  if (mo) mo.onchange = function(){
-    SEL.modelo = this.value; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
-    lsGravar(); montar();
-  };
-  if (a) a.onchange = function(){
-    SEL.ano = this.value; lsGravar(); soResultado();
-  };
+  ligarCombos();
   ligarResultado();
 }
 
@@ -765,18 +930,22 @@ function ligarResultado(){
 /* deep-link: ?marca=&modelo=&ano=&pecas=f01,t03 (o portal manda o lote).
    Comparacao ignora caixa, espaco e hifen; id desconhecido e ignorado. */
 function lerParametros(){
-  function norm(x){ return String(x || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+  var APELIDO = { vw: 'Volkswagen', gm: 'Chevrolet' };
   try {
     var q = new URLSearchParams(location.search);
     var ma = q.get('marca') || '', mo = q.get('modelo') || '', an = q.get('ano') || '';
-    CATALOGO.picapes.forEach(function(p){
-      if (norm(ma) && norm(p.marca) === norm(ma) && norm(p.modelo) === norm(mo)){
-        SEL.marca = p.marca; SEL.modelo = p.modelo;
-        if (an && p.anos){
-          p.anos.forEach(function(x){ if (norm(x) === norm(an)) SEL.ano = x; });
+    if (normaliza(ma)){
+      var alvoM = APELIDO[normaliza(ma)] ? normaliza(APELIDO[normaliza(ma)]) : normaliza(ma);
+      var mObj = null;
+      VEICULOS.marcas.forEach(function(m){ if (normaliza(m.nome) === alvoM) mObj = m; });
+      if (mObj){
+        SEL.marca = mObj.nome; SEL.modelo = ''; SEL.ano = '';
+        mObj.modelos.forEach(function(x){ if (normaliza(mo) && normaliza(x.nome) === normaliza(mo)) SEL.modelo = x.nome; });
+        if (SEL.modelo && an){
+          anosDe(SEL.marca, SEL.modelo).forEach(function(x){ if (normaliza(x) === normaliza(an)) SEL.ano = x; });
         }
       }
-    });
+    }
     /* ?motor= so aceita endereco LOCAL: serve pra testar o worker na maquina
        sem publicar. Endereco externo e ignorado (ninguem injeta outro motor). */
     var mt = q.get('motor') || '';
@@ -785,7 +954,7 @@ function lerParametros(){
     var ps = q.get('pecas') || '';
     if (ps && SEL.marca){
       var ids = {};
-      CATALOGO.picapes.forEach(function(p){ p.pecas.forEach(function(x){ ids[x.id] = true; }); });
+      CATALOGO.pecas.forEach(function(x){ ids[x.id] = true; });
       var l = [];
       ps.split(',').forEach(function(x){
         x = x.trim();
@@ -801,7 +970,8 @@ function lerParametros(){
 }
 
 lsCarregar();
-if (SEL.marca && !picapeAtual()){ SEL = { marca:'', modelo:'', ano:'' }; }
+if (SEL.marca && !marcaObj(SEL.marca)){ SEL = { marca:'', modelo:'', ano:'' }; }
+else if (SEL.modelo && !modeloObj(SEL.marca, SEL.modelo)){ SEL.modelo = ''; SEL.ano = ''; }
 lerParametros();
 render();
 if (LOTE && CFG.MOTOR_URL && AUTO){
