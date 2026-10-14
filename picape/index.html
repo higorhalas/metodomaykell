@@ -128,6 +128,8 @@ header p{margin:13px auto 0;color:var(--ink-4);font-size:15px;max-width:46ch}
 .linha.sel .nm{color:var(--ink-1);font-weight:600}
 .linha .ofc{flex:0 0 auto;font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;font-weight:700;color:var(--alerta-hi)}
+.tipo-peca{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.tipo-peca .rot{color:var(--ink-4);font-size:13px;margin-right:4px}
 .montar{margin-top:16px;text-align:center}
 .montar .btn{width:100%}
 @media(min-width:560px){.montar .btn{width:auto;min-width:320px}}
@@ -296,7 +298,10 @@ function temVivas(){
 }
 
 /* ---------- estado ---------- */
-var SEL = { marca:'', modelo:'', ano:'' };
+var SEL = { marca:'', modelo:'', ano:'', tipo:'qualquer' };
+/* tipo de peca que a pessoa quer na pesquisa (pedido do Maykell, 14/10) */
+var TIPOS = [ { id:'qualquer', t:'Tanto faz' }, { id:'original', t:'Original' }, { id:'paralela', t:'Paralela' } ];
+function tipoValido(t){ return t === 'original' || t === 'paralela' ? t : 'qualquer'; }
 var MARCADAS = {};
 var LOTE = null;      /* ?pecas= vindo do portal */
 var REGIAO = 'frente';
@@ -315,6 +320,7 @@ function lsCarregar(){
   try {
     var t = JSON.parse(localStorage.getItem(LS) || '{}') || {};
     if (t.sel && t.sel.marca) SEL = t.sel;
+    SEL.tipo = tipoValido(SEL.tipo);
     if (t.marcadas) MARCADAS = t.marcadas;
   } catch(e){}
 }
@@ -559,8 +565,16 @@ function blocoMarcar(pic){
   }).join('');
   var total = 0;
   pic.pecas.forEach(function(p){ if (MARCADAS[p.id]) total++; });
+  var tipos = CFG.MOTOR_URL
+    ? '<div class="tipo-peca"><span class="rot">Tipo de peça:</span>' +
+      TIPOS.map(function(x){
+        return '<button type="button" class="aba' + (SEL.tipo === x.id ? ' on' : '') + '" data-tipo="' +
+          x.id + '" aria-pressed="' + (SEL.tipo === x.id) + '">' + esc(x.t) + '</button>';
+      }).join('') + '</div>'
+    : '';
   return '<div class="abas">' + abas + '</div>' +
     '<div class="lista">' + linhas + '</div>' +
+    tipos +
     '<div class="montar"><button type="button" class="btn btn-1" id="btnMontar"' +
     (total ? '' : ' disabled style="opacity:.45;cursor:default"') + '>' +
     (total ? (CFG.MOTOR_URL ? (RODANDO ? 'Pesquisando...' : 'Pesquisar ' + (total === 1 ? 'a peça' : 'as ' + total + ' peças'))
@@ -605,7 +619,10 @@ function linhaMotor(p){
       '<span class="tit">' + esc(r.titulo) + '</span></div>';
   }
   var msg = r.erro === 'limite_diario' ? 'pesquisa ao vivo pausada por hoje'
-          : r.erro === 'sem_anuncio_confiavel' ? 'não achamos um anúncio confiável'
+          : r.erro === 'sem_anuncio_confiavel'
+            ? (SEL.tipo === 'original' ? 'não achamos peça original confiável'
+               : SEL.tipo === 'paralela' ? 'não achamos peça paralela confiável'
+               : 'não achamos um anúncio confiável')
           : 'a pesquisa não respondeu';
   return h + '<span class="falha">' + esc(msg) + '</span>' +
     '<a class="pl-ir" href="' + esc(urlGarimpo(p)) + '" target="_blank" rel="noopener">procurar você mesmo</a></div>';
@@ -621,7 +638,9 @@ function frasesBusca(){
     return PESQ && PESQ[p.id] && PESQ[p.id].estado === 'pesquisando';
   });
   var gerais = ['Comparando ofertas de vendedores diferentes',
-                'Descartando acessório, peça usada e anúncio de outro modelo',
+                SEL.tipo === 'original' ? 'Separando só anúncio de peça original'
+                  : SEL.tipo === 'paralela' ? 'Separando só anúncio de peça paralela'
+                  : 'Descartando acessório, peça usada e anúncio de outro modelo',
                 'Conferindo o preço cheio de cada anúncio, não a parcela',
                 'Somando quanto o carro vai custar'];
   var out = [];
@@ -710,7 +729,8 @@ function blocoPesquisa(pic){
     var temLink = ms.some(function(p){ var r = PESQ[p.id]; return r && r.estado === 'ok'; });
     return '<div class="pesq" id="pesquisa">' +
       (temLink ? avisoAfiliado() : '') +
-      '<div class="pesq-cab" style="margin-top:18px"><h2>A pesquisa' + (carro ? ': ' + esc(carro) : '') + '</h2>' +
+      '<div class="pesq-cab" style="margin-top:18px"><h2>A pesquisa' + (carro ? ': ' + esc(carro) : '') +
+      (SEL.tipo === 'original' ? ', peças originais' : SEL.tipo === 'paralela' ? ', peças paralelas' : '') + '</h2>' +
       '<span class="sub">' + ms.length + (ms.length === 1 ? ' peça' : ' peças') + '</span></div>' +
       blocoBuscaViva(ms) +
       '<div class="plan">' + ms.map(linhaMotor).join('') + '</div>' +
@@ -815,7 +835,7 @@ function pecasParaPesquisar(){
 }
 
 function pedirLote(lote){
-  var pay = {c: {marca: SEL.marca, modelo: SEL.modelo, ano: SEL.ano},
+  var pay = {c: {marca: SEL.marca, modelo: SEL.modelo, ano: SEL.ano}, t: SEL.tipo,
              p: lote.map(function(p){ return {id: p.id, nome: p.nome, q: p.q, termos: p.termos || [], excluir: p.excluir || []}; })};
   var url = CFG.MOTOR_URL + '?d=' + encodeURIComponent(JSON.stringify(pay));
   return fetch(url, {cache: 'no-store'}).then(function(r){ return r.json(); }).then(function(d){
@@ -918,6 +938,15 @@ function ligarResultado(){
       lsGravar(); soResultado();
     };
   }
+  var tp = document.querySelectorAll('button[data-tipo]');
+  for (var t2 = 0; t2 < tp.length; t2++){
+    tp[t2].onclick = function(){
+      if (RODANDO) return;
+      SEL.tipo = tipoValido(this.getAttribute('data-tipo'));
+      PESQ = null;
+      lsGravar(); soResultado();
+    };
+  }
   var bm = $('btnMontar');
   if (bm) bm.onclick = function(){
     if (CFG.MOTOR_URL){ iniciarPesquisa(); return; }
@@ -951,6 +980,7 @@ function lerParametros(){
     var mt = q.get('motor') || '';
     if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(mt)) CFG.MOTOR_URL = mt;
     AUTO = q.get('auto') === '1';
+    if (q.get('tipo')) SEL.tipo = tipoValido(q.get('tipo'));
     var ps = q.get('pecas') || '';
     if (ps && SEL.marca){
       var ids = {};
@@ -970,7 +1000,7 @@ function lerParametros(){
 }
 
 lsCarregar();
-if (SEL.marca && !marcaObj(SEL.marca)){ SEL = { marca:'', modelo:'', ano:'' }; }
+if (SEL.marca && !marcaObj(SEL.marca)){ SEL = { marca:'', modelo:'', ano:'', tipo: tipoValido(SEL.tipo) }; }
 else if (SEL.modelo && !modeloObj(SEL.marca, SEL.modelo)){ SEL.modelo = ''; SEL.ano = ''; }
 lerParametros();
 render();
