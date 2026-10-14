@@ -300,8 +300,11 @@ function temVivas(){
 /* ---------- estado ---------- */
 var SEL = { marca:'', modelo:'', ano:'', tipo:'qualquer' };
 /* tipo de peca que a pessoa quer na pesquisa (pedido do Maykell, 14/10) */
-var TIPOS = [ { id:'qualquer', t:'Tanto faz' }, { id:'original', t:'Original' }, { id:'paralela', t:'Paralela' } ];
-function tipoValido(t){ return t === 'original' || t === 'paralela' ? t : 'qualquer'; }
+var TIPOS = [ { id:'qualquer', t:'Tanto faz' }, { id:'original', t:'Original' }, { id:'paralela', t:'Paralelo' } ];
+function tipoValido(t){
+  if (t === 'paralelo') return 'paralela';   /* o nome na tela e "Paralelo"; o id interno segue 'paralela' */
+  return t === 'original' || t === 'paralela' ? t : 'qualquer';
+}
 var MARCADAS = {};
 var LOTE = null;      /* ?pecas= vindo do portal */
 var REGIAO = 'frente';
@@ -621,7 +624,7 @@ function linhaMotor(p){
   var msg = r.erro === 'limite_diario' ? 'pesquisa ao vivo pausada por hoje'
           : r.erro === 'sem_anuncio_confiavel'
             ? (SEL.tipo === 'original' ? 'não achamos peça original confiável'
-               : SEL.tipo === 'paralela' ? 'não achamos peça paralela confiável'
+               : SEL.tipo === 'paralela' ? 'não achamos paralelo confiável'
                : 'não achamos um anúncio confiável')
           : 'a pesquisa não respondeu';
   return h + '<span class="falha">' + esc(msg) + '</span>' +
@@ -639,7 +642,7 @@ function frasesBusca(){
   });
   var gerais = ['Comparando ofertas de vendedores diferentes',
                 SEL.tipo === 'original' ? 'Separando só anúncio de peça original'
-                  : SEL.tipo === 'paralela' ? 'Separando só anúncio de peça paralela'
+                  : SEL.tipo === 'paralela' ? 'Separando só anúncio de paralelo'
                   : 'Descartando acessório, peça usada e anúncio de outro modelo',
                 'Conferindo o preço cheio de cada anúncio, não a parcela',
                 'Somando quanto o carro vai custar'];
@@ -730,7 +733,7 @@ function blocoPesquisa(pic){
     return '<div class="pesq" id="pesquisa">' +
       (temLink ? avisoAfiliado() : '') +
       '<div class="pesq-cab" style="margin-top:18px"><h2>A pesquisa' + (carro ? ': ' + esc(carro) : '') +
-      (SEL.tipo === 'original' ? ', peças originais' : SEL.tipo === 'paralela' ? ', peças paralelas' : '') + '</h2>' +
+      (SEL.tipo === 'original' ? ', peças originais' : SEL.tipo === 'paralela' ? ', no paralelo' : '') + '</h2>' +
       '<span class="sub">' + ms.length + (ms.length === 1 ? ' peça' : ' peças') + '</span></div>' +
       blocoBuscaViva(ms) +
       '<div class="plan">' + ms.map(linhaMotor).join('') + '</div>' +
