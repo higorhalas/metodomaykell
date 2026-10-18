@@ -356,16 +356,15 @@ var $ = function(id){ return document.getElementById(id); };
 var HOJE = new Date();
 
 /* ---------- normalizacao do que o visitante colou ---------- */
+/* 18/10: quem le o endereco e o leitor do proprio navegador (URL), nao regra
+   feita a mao. Com regra a mao, "golpe.com?@copart.com.br" virava copart.com.br
+   ("Consta na lista") e o navegador abria o golpe. */
 function normaliza(bruto){
   var s = String(bruto || '').trim().toLowerCase();
   if (!s) return '';
-  s = s.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');   /* tira https:// e afins */
-  s = s.replace(/^[^@\/]*@/, '');                  /* tira usuario@ */
-  s = s.split(/[\/?#]/)[0];                        /* tira caminho, query, hash */
-  s = s.split(':')[0];                             /* tira :porta */
-  s = s.replace(/\.+$/, '');                       /* tira ponto final */
-  s = s.replace(/^www\./, '');
-  return s;
+  try { s = new URL(/^[a-z][a-z0-9+.-]*:\/\//.test(s) ? s : 'http://' + s).hostname; }
+  catch (e) { return s; }                          /* nao e endereco: valido() recusa */
+  return s.replace(/\.+$/, '').replace(/^www\./, '');
 }
 
 function valido(h){

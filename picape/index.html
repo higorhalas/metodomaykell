@@ -316,6 +316,15 @@ var FRASE = '';       /* frase da busca viva na tela agora */
 var FRASE_I = 0;
 var FRASE_TIMER = null;
 var RODANDO = false;
+var BUSCA = 0;        /* conta as pesquisas: resposta de pesquisa velha (o carro mudou no meio) e ignorada */
+
+/* 18/10: trocar o carro joga fora a pesquisa (ate a que esta rodando). Antes,
+   trocar o ano deixava a peca do ano velho na tabela, e trocar o modelo no meio
+   travava o botao em "Pesquisando..." */
+function cancelarPesquisa(){
+  BUSCA++; PESQ = null;
+  if (RODANDO){ RODANDO = false; pararBuscaViva(); }
+}
 
 var LS = 'picape-v1';
 function lsGravar(){
@@ -491,18 +500,19 @@ function escolherCombo(id, valor){
   fecharCombo(id);
   if (id === 'marca'){
     if (valor !== SEL.marca){
-      SEL.marca = valor; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
+      SEL.marca = valor; SEL.modelo = ''; SEL.ano = ''; MARCADAS = {}; LOTE = null; cancelarPesquisa();
       lsGravar(); montar();
     }
     focarCombo('modelo');
   } else if (id === 'modelo'){
     if (valor !== SEL.modelo){
-      SEL.modelo = valor; SEL.ano = ''; MARCADAS = {}; LOTE = null; PESQ = null;
+      SEL.modelo = valor; SEL.ano = ''; MARCADAS = {}; LOTE = null; cancelarPesquisa();
       lsGravar(); montar();
     }
     focarCombo('ano');
   } else if (id === 'ano'){
-    SEL.ano = valor; lsGravar();
+    if (valor !== SEL.ano){ SEL.ano = valor; cancelarPesquisa(); }
+    lsGravar();
     var inp = $('in-ano');
     if (inp){ inp.value = valor; inp.blur(); }
     soResultado();
@@ -629,7 +639,7 @@ function linhaMotor(p){
         : r.duvida ? '<span class="ano-conf">confira no anúncio se é a peça do seu carro</span>' : '') +
       '</div>';
   }
-  var msg = r.erro === 'limite_diario' ? 'pesquisa ao vivo pausada por hoje'
+  var msg = (r.erro === 'limite_diario' || r.erro === 'limite_ip') ? 'pesquisa ao vivo pausada por hoje'
           : r.erro === 'sem_anuncio_confiavel'
             ? (SEL.tipo === 'original' ? 'não achamos peça original confiável'
                : SEL.tipo === 'paralela' ? 'não achamos paralelo confiável'
@@ -846,11 +856,13 @@ function pecasParaPesquisar(){
   return pic.pecas.filter(function(p){ return MARCADAS[p.id] && !p.semML; });
 }
 
-function pedirLote(lote){
+function pedirLote(lote, id){
+  if (id !== BUSCA) return Promise.resolve();
   var pay = {c: {marca: SEL.marca, modelo: SEL.modelo, ano: SEL.ano}, t: SEL.tipo,
              p: lote.map(function(p){ return {id: p.id, nome: p.nome, q: p.q, termos: p.termos || [], excluir: p.excluir || [], aceitar: p.aceitar || []}; })};
   var url = CFG.MOTOR_URL + '?d=' + encodeURIComponent(JSON.stringify(pay));
   return fetch(url, {cache: 'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    if (id !== BUSCA) return;
     (d.linhas || []).forEach(function(l){
       PESQ[l.id] = l.erro ? {estado: 'erro', erro: l.erro}
                           : {estado: 'ok', preco: l.preco, titulo: l.titulo, link: l.link, ano: l.ano, duvida: !!l.duvida};
@@ -861,8 +873,15 @@ function pedirLote(lote){
       }
     });
   }).catch(function(){
+    if (id !== BUSCA) return;
     lote.forEach(function(p){ PESQ[p.id] = {estado: 'erro', erro: 'busca_falhou'}; });
-  }).then(function(){ redesenharPesquisa(); });
+  }).then(function(){ if (id === BUSCA) redesenharPesquisa(); });
+}
+
+/* um lote de cada vez (18/10): o robo le o contador do teto diario no comeco de
+   cada pedido, e com os lotes juntos o teto nao segurava (teste: teto 10, sairam 20) */
+function emSequencia(lotes, id){
+  return lotes.reduce(function(fila, l){ return fila.then(function(){ return pedirLote(l, id); }); }, Promise.resolve());
 }
 
 function emLotes(lista){
@@ -874,6 +893,7 @@ function emLotes(lista){
 function iniciarPesquisa(){
   var ps = pecasParaPesquisar();
   if (RODANDO) return;
+  var id = ++BUSCA;
   PESQ = {};
   ps.forEach(function(p){ PESQ[p.id] = {estado: 'pesquisando'}; });
   RODANDO = true;
@@ -882,7 +902,8 @@ function iniciarPesquisa(){
   var alvo = $('pesquisa');
   if (alvo) alvo.scrollIntoView({behavior: 'smooth', block: 'start'});
   if (!ps.length){ RODANDO = false; pararBuscaViva(); soResultado(); return; }
-  Promise.all(emLotes(ps).map(pedirLote)).then(function(){
+  emSequencia(emLotes(ps), id).then(function(){
+    if (id !== BUSCA) return;
     /* o SerpApi termina a busca mesmo quando a gente desiste e guarda por 1h:
        a 2a tentativa costuma vir na hora e sem custo */
     var falhas = ps.filter(function(p){ return PESQ[p.id] && PESQ[p.id].erro === 'busca_falhou'; });
@@ -890,8 +911,11 @@ function iniciarPesquisa(){
     falhas.forEach(function(p){ PESQ[p.id] = {estado: 'pesquisando'}; });
     redesenharPesquisa();
     return new Promise(function(ok){ setTimeout(ok, 6000); })
-      .then(function(){ return Promise.all(emLotes(falhas).map(pedirLote)); });
-  }).then(function(){ RODANDO = false; pararBuscaViva(); soResultado(); });
+      .then(function(){ return emSequencia(emLotes(falhas), id); });
+  }).catch(function(){}).then(function(){
+    if (id !== BUSCA) return;   /* o carro mudou no meio: cancelarPesquisa ja destravou */
+    RODANDO = false; pararBuscaViva(); soResultado();
+  });
 }
 
 function redesenharPesquisa(){
