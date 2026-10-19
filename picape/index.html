@@ -573,7 +573,7 @@ function blocoMarcar(pic){
   }).join('');
   var linhas = pic.pecas.filter(function(p){ return p.grupo === REGIAO; }).map(function(p){
     return '<label class="linha' + (MARCADAS[p.id] ? ' sel' : '') + '">' +
-      '<input type="checkbox" data-peca="' + esc(p.id) + '"' + (MARCADAS[p.id] ? ' checked' : '') + '>' +
+      '<input type="checkbox" data-peca="' + esc(p.id) + '"' + (MARCADAS[p.id] ? ' checked' : '') + (RODANDO ? ' disabled' : '') + '>' +
       '<span class="nm">' + esc(p.nome) + '</span>' +
       (p.semML ? '<span class="ofc">oficina</span>' : '') +
       '</label>';
@@ -776,7 +776,7 @@ function blocoPesquisa(pic){
 
 function isencao(){
   return '<div class="ro-isencao"><p>A busca é minha, a decisão é sua. Preço e vendedor mudam, ' +
-    'e peça cara é justamente o que mais derruba o teto de um lance. Confira o anúncio, some no ' +
+    'e peça não muda o teto do lance, mas aumenta o que sai do seu bolso. Confira o anúncio, some no ' +
     'seu orçamento e não passe do seu teto.</p></div>';
 }
 
@@ -969,8 +969,10 @@ function ligarResultado(){
   var caixas = document.querySelectorAll('input[data-peca]');
   for (var j = 0; j < caixas.length; j++){
     caixas[j].onchange = function(){
+      /* 19/10: peca marcada no meio da pesquisa ficava "pesquisando" pra sempre */
+      if (RODANDO){ this.checked = !this.checked; return; }
       MARCADAS[this.getAttribute('data-peca')] = this.checked;
-      if (!RODANDO) PESQ = null;
+      PESQ = null;
       lsGravar(); soResultado();
     };
   }

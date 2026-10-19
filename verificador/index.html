@@ -367,6 +367,19 @@ function normaliza(bruto){
   return s.replace(/\.+$/, '').replace(/^www\./, '');
 }
 
+/* 19/10: letra de outro alfabeto ou com acento que imita letra comum: cоpart (o cirilico) e copart pra quem le */
+var PARECIDAS = {
+  'а':'a', /* а cirilico */  'е':'e', /* е cirilico */  'о':'o', /* о cirilico */
+  'р':'p', /* р cirilico */  'с':'c', /* с cirilico */  'у':'y', /* у cirilico */
+  'х':'x', /* х cirilico */  'і':'i', /* і cirilico */  'ј':'j', /* ј cirilico */
+  'ѕ':'s', /* ѕ cirilico */  'ԁ':'d', /* ԁ cirilico */  'ο':'o', /* ο grego */
+  'α':'a', /* α grego */     'ν':'v', /* ν grego */     'ι':'i'  /* ι grego */
+};
+function dobra(s){
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/./g, function(ch){ return PARECIDAS[ch] || ch; });
+}
+
 function valido(h){
   /* o ultimo pedaco tem que ser uma extensao de verdade, com 2 letras ou mais.
      Sem isso "a.b" passava como endereco e a ferramenta respondia a serio. */
@@ -432,6 +445,8 @@ function classifica(h){
       return { tipo:'governo', sufixo:GOV[i] };
     }
   }
+  /* 19/10: com.br, net.br sozinhos sao a extensao, nao um site. Sem isso a regra 'pai' dizia 'consta Copart' pra 'com.br' */
+  if (ehExtensaoPura(h)) return { tipo:'naoconsta' };
   if (REFERENCIA[h]) return { tipo:'referencia', ref:REFERENCIA[h] };
 
   for (i=0;i<LISTA.length;i++){
@@ -675,8 +690,8 @@ function blocoAcoes(h){
 /* ---------- montagem da resposta ---------- */
 var ultimoHost = '', ultimoVeredito = '';
 
-function responde(h){
-  var c = classifica(h), html = '';
+function responde(h, forcado, visivel){
+  var c = forcado || classifica(h), html = '';
   ultimoHost = h;
   ultimoVeredito = c.tipo;
 
@@ -684,7 +699,7 @@ function responde(h){
     var l = c.l, onde = l.cidade ? l.cidade + ', ' + l.uf : l.uf;
     var nota = '';
     if (c.onde === 'filho'){
-      nota = '<p>Você colou <b class="dom">' + esc(h) + '</b>, que é uma página dentro de <b class="dom">' + esc(l.dominio) + '</b>.</p>';
+      nota = '<p>Você colou <b class="dom">' + esc(visivel || h) + '</b>, que é uma página dentro de <b class="dom">' + esc(l.dominio) + '</b>.</p>';
     } else if (c.onde === 'pai'){
       nota = '<p>Você colou <b class="dom">' + esc(h) + '</b>. O endereço que eu tenho anotado é o da área de lotes, <b class="dom">' + esc(l.dominio) + '</b>, que fica dentro desse mesmo site.</p>';
     }
@@ -719,7 +734,7 @@ function responde(h){
       '<p>' + frase + ' <b>Esse é o caso em que eu paro e confiro letra por letra</b>, porque é assim que o site clonado se parece com o original.</p>' +
       '<div class="comp">' +
         '<div class="comp-l seu"><div class="rot">O que você colou</div>' +
-          '<div class="dom">' + destaca(h, of.dominio) + '</div>' +
+          '<div class="dom">' + destaca(visivel || h, of.dominio) + '</div>' +
           '<div class="idade" id="idadeSeu">conferindo a idade...</div></div>' +
         '<div class="comp-l lista"><div class="rot">O que está na minha lista</div>' +
           '<div class="dom">' + esc(of.dominio) + '</div>' +
@@ -760,7 +775,8 @@ function responde(h){
       '<h2>Esse endereço não está na minha lista, e isso não quer dizer que seja falso.</h2>' +
       '<p>Você colou <b class="dom">' + esc(h) + '</b>. Minha lista tem ' + LISTA.length +
         ' leiloeiros, que são os que eu uso. Existe leiloeiro sério de sobra fora dela.</p>' +
-      '<div id="slotIdade"><div class="carregando">Consultando a idade do domínio...</div></div>' +
+      /* 19/10: extensao pura nao tem idade, e a caixa dela fala de governo */
+      (ehExtensaoPura(h) ? '' : '<div id="slotIdade"><div class="carregando">Consultando a idade do domínio...</div></div>') +
       '<p>Então em vez de eu dar um veredito sobre um site que eu não conheço, <b>vou te mandar onde eu mesmo conferiria:</b></p>' +
       blocoFontes() +
       LINHA_FIXA +
@@ -774,7 +790,8 @@ function responde(h){
 
   /* a idade chega depois, sem travar a resposta */
   if (c.tipo === 'parecido'){
-    idade(h).then(function(r){ linhaCurta('idadeSeu', r); });
+    /* 19/10: consulta com o punycode (h), mostra o endereco como a pessoa le */
+    idade(h).then(function(r){ if (visivel && r.dominio) r.dominio = registravel(visivel); linhaCurta('idadeSeu', r); });
     idade(c.m.l.dominio).then(function(r){ linhaCurta('idadeOf', r); });
   } else if (c.tipo !== 'referencia'){
     idade(h).then(function(r){
@@ -815,7 +832,23 @@ function conferir(){
     e.classList.add('on'); return;
   }
   e.classList.remove('on');
-  responde(h);
+  /* 19/10: clone com letra de outro alfabeto (cоpart) virava punycode e caia em 'nao consta' neutro */
+  var bruto = $('q').value, hd = normaliza(dobra(bruto));
+  if (hd !== h && valido(hd)){
+    var cd = classifica(hd);
+    var vis = String(bruto).trim().toLowerCase().replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+      .split(/[\/\\?#]/)[0].split('@').pop().split(':')[0].replace(/\.+$/, '').replace(/^www\./, '');
+    /* 19/10: letra estranha so no subdominio de um dominio da lista e do proprio dono, segue o fluxo normal */
+    if (cd.tipo === 'consta' && registravel(h) !== registravel(hd)){
+      var dif = 0;
+      for (var i=0;i<vis.length;i++){ if (dobra(vis.charAt(i)) !== vis.charAt(i)) dif++; }
+      responde(h, { tipo:'parecido', m:{ l:cd.l, forca:5, motivo:'letras', dist:Math.max(dif,1) } }, vis);
+      return;
+    }
+    /* 19/10: clone cirilico com truque de subdominio (cоpart.com.br.golpe.com) caia em 'nao consta' com punycode */
+    if (cd.tipo === 'parecido'){ responde(h, cd, vis); return; }
+  }
+  responde(h, null, vis);
 }
 
 $('conferir').addEventListener('click', conferir);
