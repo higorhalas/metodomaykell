@@ -49,6 +49,11 @@ footer{max-width:520px;margin:0 auto;padding:0 20px 32px;color:var(--cinza);font
 @keyframes cursor{50%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.cta,.janela h2::after{animation:none}}
 </style>
+<!-- Pixel da Meta: PageView na visita, Lead no clique pro grupo (evento da campanha). -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2067553607326684');fbq('track','PageView');
+</script>
 </head>
 <body>
 <main>
@@ -80,5 +85,9 @@ footer{max-width:520px;margin:0 auto;padding:0 20px 32px;color:var(--cinza);font
   <p>Publicidade · as indicações do grupo usam links de afiliado.</p>
   <p style="margin-top:6px">Maykell Gomes · @maykellgomes</p>
 </footer>
+<script>
+// Segura 300 ms antes de abrir o WhatsApp pro Lead sair antes da troca de pagina.
+document.querySelectorAll('.cta').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();fbq('track','Lead');setTimeout(function(){location.href=a.href},300)})});
+</script>
 </body>
 </html>
