@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vaga garantida · O Código do Lance Certo</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Vaga garantida. Entre no grupo do WhatsApp pra receber o link e o lembrete da aula.">
+
+<!--
+  CHECKLIST:
+  [ ] CONFIG.WEBINAR_DATE + WEBINAR_DATE_LABEL  (a MESMA data da landing)
+  [ ] CONFIG.WHATSAPP_GROUP_URL                 (link de convite do grupo da aula)
+  [ ] CONFIG.WHATSAPP_FALLBACK                  (numero pra quem nao conseguir entrar pelo botao)
+  [ ] CONFIG.PIXEL_ID                           (o MESMO da landing)
+  Duracao (WEBINAR_DURATION_MIN) tem que bater com o "60 min" da landing.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#000; --bg-2:#2A1D07;
+  --text:#F5F2EC; --muted:#A8A39A; --muted-2:#6F6B64;
+  --accent:#FFA41B; --accent-dark:#FFC14D; --accent-deep:#FFA41B;
+  --soft:rgba(255,164,27,.08); --line:rgba(255,164,27,.45);
+  --btn-text:#1A1206;
+  --font:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--bg); min-height:100%; overflow-x:hidden}
+body{ font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased;
+  display:flex; align-items:center; justify-content:center; padding:24px; overflow-x:hidden; position:relative }
+body::before{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(760px 440px at 50% 8%, rgba(255,164,27,.22), transparent 66%), radial-gradient(800px 520px at 50% 110%, var(--bg-2), transparent 70%); }
+.card{ position:relative; z-index:1; width:100%; max-width:520px; text-align:center; display:flex; flex-direction:column; align-items:center }
+.logo{ font-weight:800; font-size:18px; color:var(--text); letter-spacing:-.02em; margin-bottom:34px; opacity:0; animation:fade .7s ease .1s forwards }
+.logo span{ color:var(--accent) }
+.check{ width:92px; height:92px; margin-bottom:26px; opacity:0; transform:scale(.6); animation:pop .7s cubic-bezier(.34,1.56,.64,1) .2s forwards; filter:drop-shadow(0 12px 30px rgba(255,164,27,.45)) }
+.check svg{ width:100%; height:100% }
+.check .tick{ stroke:#fff; stroke-width:6; fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:60; stroke-dashoffset:60; animation:draw .5s ease .9s forwards }
+@keyframes draw{ to{ stroke-dashoffset:0 } }
+@keyframes pop{ to{ opacity:1; transform:scale(1) } }
+@keyframes fade{ to{ opacity:1 } }
+.eyebrow{ font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent-dark); font-weight:700; margin-bottom:14px; opacity:0; animation:rise .7s ease .9s forwards }
+h1{ font-size:34px; line-height:1.1; font-weight:800; letter-spacing:-.03em; margin-bottom:16px; opacity:0; animation:rise .8s ease 1.05s forwards }
+h1 .grad{ color:var(--accent-deep) }
+.lead{ font-size:15.5px; color:var(--muted); line-height:1.62; max-width:420px; margin-bottom:26px; opacity:0; animation:rise .8s ease 1.2s forwards }
+.lead b{ color:var(--text); font-weight:600 }
+@keyframes rise{ from{ opacity:0; transform:translateY(16px) } to{ opacity:1; transform:none } }
+.date-pill{ display:inline-flex; align-items:center; gap:9px; font-size:12.5px; font-weight:600; letter-spacing:.04em; color:var(--text); background:var(--soft); border:1px solid var(--line); border-radius:999px; padding:9px 16px; margin-bottom:30px; opacity:0; animation:rise .8s ease 1.35s forwards }
+.date-pill .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent-dark) }
+.btns{ display:flex; flex-direction:column; align-items:center; gap:12px; width:100% }
+.btn-wpp,.btn-cal{ display:inline-flex; align-items:center; justify-content:center; gap:10px; font-family:var(--font); font-weight:700; font-size:15.5px; letter-spacing:-.01em; border:0; border-radius:12px; padding:16px 30px; cursor:pointer; text-decoration:none; transition:transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, background .25s ease; opacity:0; animation:rise .8s ease 1.5s forwards }
+.btn-wpp{ color:#fff; background:#25D366; box-shadow:0 12px 28px rgba(37,211,102,.34) }
+.btn-wpp:hover{ transform:translateY(-2px); background:#1EBE5A; box-shadow:0 18px 40px rgba(37,211,102,.42) }
+.btn-wpp svg{ width:20px; height:20px; fill:#fff }
+.btn-cal{ color:var(--btn-text); background:var(--accent); box-shadow:0 12px 30px rgba(255,164,27,.35) }
+.btn-cal:hover{ transform:translateY(-2px); background:var(--accent-dark); box-shadow:0 18px 40px rgba(255,164,27,.45) }
+.btn-cal svg{ width:19px; height:19px; fill:none; stroke:var(--btn-text); stroke-width:2; stroke-linecap:round }
+.note{ margin-top:16px; font-size:12.5px; color:var(--muted-2); line-height:1.6; max-width:380px; opacity:0; animation:rise .8s ease 1.65s forwards }
+.note b{ color:var(--text); font-weight:600 }
+.footer{ position:fixed; bottom:18px; left:0; right:0; text-align:center; z-index:1; font-size:11px; color:var(--muted-2); letter-spacing:.04em }
+@media (max-width:520px){ h1{ font-size:28px } .check{ width:80px; height:80px } }
+@media (prefers-reduced-motion: reduce){ *{ animation:none !important; opacity:1 !important; transform:none !important } .check .tick{ stroke-dashoffset:0 !important } }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">O Código do <span>Lance Certo</span></div>
+
+  <div class="check">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="amb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC14D"/><stop offset="1" stop-color="#E08A00"/></linearGradient></defs>
+      <circle cx="50" cy="50" r="46" fill="url(#amb)"/>
+      <path class="tick" d="M30 52 L44 66 L72 36"/>
+    </svg>
+  </div>
+
+  <div class="eyebrow">Inscrição confirmada</div>
+  <h1>Vaga garantida.<br><span class="grad">Falta um passo.</span></h1>
+  <p class="lead">O link da sala vai pelo grupo do WhatsApp, junto com o lembrete no dia. <b>Entra agora pra não perder.</b> O grupo é só de avisos: apenas o Maykell manda mensagem.</p>
+
+  <div class="date-pill"><span class="dot"></span>Ao vivo · <span data-date-label>7 de dezembro, segunda-feira, às 20h</span></div>
+
+  <div class="btns">
+    <a class="btn-wpp" id="wppBtn" target="_blank" rel="noopener" href="#">
+      <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.2 4.79 1.2h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.5 12.16c-.24-.12-1.45-.72-1.68-.8-.22-.08-.39-.12-.55.12-.16.24-.63.8-.77.96-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.97-1.21-.73-.65-1.22-1.45-1.36-1.69-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.45-.59 1.65-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/></svg>
+      Entrar no grupo da sala
+    </a>
+    <a class="btn-cal" id="gcalBtn" target="_blank" rel="noopener" href="#">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+      Adicionar ao Google Agenda
+    </a>
+  </div>
+
+  <p class="note" id="fallbackNote">Se o botão não abrir, salva o número <b data-fallback>[PLACEHOLDER]</b> e manda <b>EU QUERO</b> que a gente te coloca no grupo.</p>
+</div>
+
+<div class="footer">Maykell Gomes · O Código do Lance Certo · 2026</div>
+
+<script>
+const CONFIG = {
+  WEBINAR_DATE: '2026-12-07T20:00:00-03:00',                      // mesma data da landing
+  WEBINAR_DATE_LABEL: '7 de dezembro, segunda-feira, às 20h',
+  WHATSAPP_GROUP_URL: 'https://chat.whatsapp.com/JPIfPbTcWKZG4rq2o0IaH4',                // ex.: https://chat.whatsapp.com/XXXXXXXX (botao some enquanto vazio)
+  WHATSAPP_FALLBACK: '',                 // ex.: (41) 99999-9999 (a nota some enquanto vazio)
+  WEBINAR_DURATION_MIN: 60,
+  WEBINAR_TITULO: 'O Código do Lance Certo (aula ao vivo com o Maykell)',
+  WEBINAR_DETALHES: 'Sala fechada, ao vivo e gratuita. O link vai no grupo do WhatsApp da sua inscricao.',
+  PIXEL_ID: '2067553607326684'                           // o mesmo da landing
+};
+document.querySelectorAll('[data-date-label]').forEach(el => el.textContent = CONFIG.WEBINAR_DATE_LABEL);
+
+(function pixel(){
+  if(!CONFIG.PIXEL_ID) return;
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', CONFIG.PIXEL_ID);
+  fbq('track', 'PageView');
+  fbq('track', 'CompleteRegistration', { content_name: 'Aulao Leilao' });
+})();
+
+(function wppGroup(){
+  var btn = document.getElementById('wppBtn');
+  var url = (CONFIG.WHATSAPP_GROUP_URL || '').trim();
+  if(url.indexOf('http') === 0){ btn.href = url; } else { btn.style.display = 'none'; }
+  var note = document.getElementById('fallbackNote');
+  var fb = (CONFIG.WHATSAPP_FALLBACK || '').trim();
+  if(fb){ document.querySelectorAll('[data-fallback]').forEach(function(el){ el.textContent = fb; }); }
+  else if(note){ note.style.display = 'none'; }
+})();
+
+(function googleCalendar(){
+  var btn = document.getElementById('gcalBtn');
+  var start = new Date(CONFIG.WEBINAR_DATE);
+  if(!CONFIG.WEBINAR_DATE || isNaN(start.getTime())){ btn.style.display = 'none'; return; }
+  var end = new Date(start.getTime() + CONFIG.WEBINAR_DURATION_MIN * 60000);
+  var fmt = function(d){ return d.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''); };
+  var params = new URLSearchParams({ action:'TEMPLATE', text:CONFIG.WEBINAR_TITULO, dates:fmt(start)+'/'+fmt(end), details:CONFIG.WEBINAR_DETALHES });
+  btn.href = 'https://calendar.google.com/calendar/render?' + params.toString();
+})();
+</script>
+</body>
+</html>
